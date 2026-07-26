@@ -35,6 +35,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',
+        'company_name',
+        'dealer_tier',
+        'kyc_status',
+        'account_standing',
+        'avatar',
         'otp',
         'otp_expires_at',
         'verification_token',
@@ -79,7 +85,7 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email']) //customize the fields you want to log
+            ->logOnly(['name', 'email', 'kyc_status', 'dealer_tier', 'account_standing']) //customize the fields you want to log
             ->logOnlyDirty() //log only the changed fields
             ->setDescriptionForEvent(fn(string $eventName) => "User has been {$eventName}")
             ->useLogName('user_activity');

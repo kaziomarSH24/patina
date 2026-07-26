@@ -32,7 +32,11 @@ class AuthController extends Controller
     {
         try {
             $data = $this->authService->login($request->only('email', 'password', 'fcm_token'));
-            return response_success('Login successful', $data);
+            
+            // Set cookie for 30 days, HttpOnly=true
+            $cookie = cookie('auth_token', $data['access_token'], 60 * 24 * 30, '/', null, false, true, false, 'Lax');
+            
+            return response_success('Login successful', $data)->withCookie($cookie);
         } catch (ValidationException $e) {
             return response_error($e->getMessage(), $e->errors(), 401);
         }
@@ -41,6 +45,8 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        return response_success('Successfully logged out');
+        
+        $cookie = cookie()->forget('auth_token');
+        return response_success('Successfully logged out')->withCookie($cookie);
     }
 }

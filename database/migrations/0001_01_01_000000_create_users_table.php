@@ -17,6 +17,12 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('phone_number')->nullable()->unique();
+            $table->string('company_name')->nullable();
+            $table->enum('dealer_tier', ['unverified', 'silver', 'gold', 'platinum'])->default('unverified');
+            $table->enum('kyc_status', ['pending', 'submitted', 'approved', 'rejected'])->default('pending');
+            $table->enum('account_standing', ['good', 'warning', 'suspended'])->default('good');
+            $table->string('avatar')->nullable();
             $table->string('otp')->nullable();
             $table->string('verification_token')->nullable();
             $table->timestamp('otp_expires_at')->nullable();

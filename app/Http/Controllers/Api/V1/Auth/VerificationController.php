@@ -31,7 +31,10 @@ class VerificationController extends Controller
 
         // try {
             $data = $this->authService->verify($request->all());
-            return response_success('Email verified successfully. You are now logged in.', $data);
+            
+            $cookie = cookie('auth_token', $data['access_token'], 60 * 24 * 30, '/', null, false, true, false, 'Lax');
+            
+            return response_success('Email verified successfully. You are now logged in.', $data)->withCookie($cookie);
         // } catch (\Exception $e) {
         //     return response_error($e->getMessage(), [], 400);
         // }
