@@ -16,7 +16,9 @@ class UpdateProfileRequest extends BaseRequest
         return [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $this->user()->id,
-            'avatar' => 'sometimes|image|max:5120', // max 5MB
+            'phone_number' => 'sometimes|string|max:20|unique:users,phone_number,' . $this->user()->id,
+            'company_name' => 'sometimes|string|max:255',
+            'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // max 5MB
         ];
     }
 }
