@@ -39,7 +39,7 @@ Route::prefix('v1/auth')->group(function () {
 // Route::post('/upload', [FileController::class, 'handleRequest'])->name('api.v1.file.upload');
 
 // --- Protected Routes (User must be logged in) ---
-Route::middleware('auth:sanctum', 'throttle:api')->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
 
     // Auth related protected routes
     Route::prefix('auth')->name('api.v1.auth.')->group(function () {
@@ -51,6 +51,19 @@ Route::middleware('auth:sanctum', 'throttle:api')->prefix('v1')->group(function 
     Route::prefix('profile')->name('api.v1.profile.')->group(function () {
         Route::get('/me', [ProfileController::class, 'me'])->name('me');
         Route::post('/update', [ProfileController::class, 'updateProfile'])->name('update');
+    });
+
+    // Dealer/User KYC Routes
+    Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
+        Route::post('/submit', [\App\Http\Controllers\Api\V1\Dealer\KycController::class, 'submit'])->name('submit');
+        Route::get('/status', [\App\Http\Controllers\Api\V1\Dealer\KycController::class, 'status'])->name('status');
+    });
+
+    // Admin KYC Routes (Protected by role middleware)
+    Route::middleware(['role:admin'])->prefix('admin/kyc')->name('api.v1.admin.kyc.')->group(function () {
+        Route::get('/pending', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'pending'])->name('pending');
+        Route::post('/{userId}/approve', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'approve'])->name('approve');
+        Route::post('/{userId}/reject', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'reject'])->name('reject');
     });
 
     /**

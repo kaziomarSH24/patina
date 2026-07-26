@@ -14,6 +14,8 @@ use Laravel\Cashier\Billable;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Support\Facades\Storage;
+use App\Models\KycDocument;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -89,6 +91,11 @@ class User extends Authenticatable
     public function fcmTokens()
     {
         return $this->hasMany(FcmToken::class);
+    }
+
+    public function kycDocuments(): HasMany
+    {
+        return $this->hasMany(KycDocument::class);
     }
 
     // Activity Log Configuration, it's also customizable
