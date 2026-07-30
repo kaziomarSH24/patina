@@ -60,10 +60,23 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     });
 
     // Admin KYC Routes (Protected by role middleware)
-    Route::middleware(['role:admin'])->prefix('admin/kyc')->name('api.v1.admin.kyc.')->group(function () {
-        Route::get('/pending', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'pending'])->name('pending');
-        Route::post('/{userId}/approve', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'approve'])->name('approve');
-        Route::post('/{userId}/reject', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'reject'])->name('reject');
+    Route::middleware(['role:admin'])->prefix('admin')->name('api.v1.admin.')->group(function () {
+        
+        // Admin KYC
+        Route::prefix('kyc')->name('kyc.')->group(function () {
+            Route::get('/pending', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'pending'])->name('pending');
+            Route::get('/{userId}/documents', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'documents'])->name('documents');
+            Route::post('/{userId}/approve', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'approve'])->name('approve');
+            Route::post('/{userId}/reject', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'reject'])->name('reject');
+        });
+
+        // Admin Users
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'index'])->name('index');
+            Route::get('/{id}/history', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'history'])->name('history');
+            Route::patch('/{id}/standing', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'updateStanding'])->name('update-standing');
+        });
+
     });
 
     /**

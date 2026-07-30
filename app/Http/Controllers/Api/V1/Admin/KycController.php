@@ -18,6 +18,19 @@ class KycController extends Controller
     }
 
     /**
+     * Get a specific user's KYC documents.
+     */
+    public function documents(string $userId)
+    {
+        $user = User::with('kycDocuments')->findOrFail($userId);
+
+        return response_success('User KYC documents retrieved successfully.', [
+            'kyc_status' => $user->kyc_status,
+            'documents' => $user->kycDocuments,
+        ]);
+    }
+
+    /**
      * List all pending KYCs.
      */
     public function pending(Request $request)
