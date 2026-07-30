@@ -18,11 +18,17 @@ class Listing extends Model
         'status',
         'is_verified',
         'condition_notes',
+        'condition',
+        'case_size',
+        'year_of_production',
+        'location',
+        'accessories',
         'images',
     ];
 
     protected $casts = [
         'images' => 'array',
+        'accessories' => 'array',
         'is_verified' => 'boolean',
         'price' => 'decimal:2',
     ];

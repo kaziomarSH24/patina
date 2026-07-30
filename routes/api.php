@@ -5,9 +5,11 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\ProfileController;
 use App\Http\Controllers\Api\V1\Auth\VerificationController;
+use App\Http\Controllers\Api\V1\Admin\ListingController as AdminListingController;
 use App\Http\Controllers\Api\V1\Chat\ConversationController;
 use App\Http\Controllers\Api\V1\Chat\GroupController;
 use App\Http\Controllers\Api\V1\Chat\MessageController;
+use App\Http\Controllers\Api\V1\ListingController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\Payment\InvoiceController;
 use App\Http\Controllers\Api\V1\Payment\OneTimePaymentController;
@@ -38,6 +40,12 @@ Route::prefix('v1/auth')->group(function () {
 
 // Route::post('/upload', [FileController::class, 'handleRequest'])->name('api.v1.file.upload');
 
+// --- Public Routes (Listings) ---
+Route::prefix('v1/listings')->group(function () {
+    Route::get('/', [ListingController::class, 'index'])->name('api.v1.listings.index');
+    Route::get('/{id}', [ListingController::class, 'show'])->name('api.v1.listings.show');
+});
+
 // --- Protected Routes (User must be logged in) ---
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
 
@@ -51,6 +59,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::prefix('profile')->name('api.v1.profile.')->group(function () {
         Route::get('/me', [ProfileController::class, 'me'])->name('me');
         Route::post('/update', [ProfileController::class, 'updateProfile'])->name('update');
+    });
+
+    // Listings (Authenticated user portfolio and creation)
+    Route::prefix('listings')->name('api.v1.listings.')->group(function () {
+        Route::post('/', [ListingController::class, 'store'])->name('store');
+    });
+
+    Route::prefix('user/listings')->name('api.v1.user.listings.')->group(function () {
+        Route::get('/', [ListingController::class, 'userListings'])->name('index');
     });
 
     // Dealer/User KYC Routes
@@ -75,6 +92,13 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
             Route::get('/', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'index'])->name('index');
             Route::get('/{id}/history', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'history'])->name('history');
             Route::patch('/{id}/standing', [\App\Http\Controllers\Api\V1\Admin\UserController::class, 'updateStanding'])->name('update-standing');
+        });
+
+        // Admin Listings
+        Route::prefix('listings')->name('listings.')->group(function () {
+            Route::get('/', [AdminListingController::class, 'index'])->name('index');
+            Route::get('/{id}', [AdminListingController::class, 'show'])->name('show');
+            Route::patch('/{id}/status', [AdminListingController::class, 'updateStatus'])->name('update-status');
         });
 
     });
