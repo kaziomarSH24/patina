@@ -98,6 +98,61 @@ class User extends Authenticatable
         return $this->hasMany(KycDocument::class);
     }
 
+    public function listings(): HasMany
+    {
+        return $this->hasMany(Listing::class, 'seller_id');
+    }
+
+    public function escrowTransactionsAsBuyer(): HasMany
+    {
+        return $this->hasMany(EscrowTransaction::class, 'buyer_id');
+    }
+
+    public function escrowTransactionsAsSeller(): HasMany
+    {
+        return $this->hasMany(EscrowTransaction::class, 'seller_id');
+    }
+
+    public function followers(): HasMany
+    {
+        return $this->hasMany(Follower::class, 'following_id');
+    }
+
+    public function following(): HasMany
+    {
+        return $this->hasMany(Follower::class, 'follower_id');
+    }
+
+    public function wishlistItems(): HasMany
+    {
+        return $this->hasMany(WishlistItem::class);
+    }
+
+    public function reviewsGiven(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    public function reviewsReceived(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
+    public function priceAlerts(): HasMany
+    {
+        return $this->hasMany(PriceAlert::class);
+    }
+
+    public function portfolioItems(): HasMany
+    {
+        return $this->hasMany(PortfolioItem::class);
+    }
+
+    public function offersMade(): HasMany
+    {
+        return $this->hasMany(Offer::class, 'buyer_id');
+    }
+
     // Activity Log Configuration, it's also customizable
     public function getActivitylogOptions(): LogOptions
     {
