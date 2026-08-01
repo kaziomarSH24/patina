@@ -120,6 +120,11 @@ class ListingService extends BaseService
             abort(403, 'Unauthorized action.');
         }
 
+        // Prevent updating listings that are already approved or sold
+        if (in_array($listing->status, ['Live', 'Sold'])) {
+            abort(403, 'You cannot update a listing that is already Live or Sold.');
+        }
+
         // If it was rejected and being updated, we can return it to Under Review
         if ($listing->status === 'Rejected') {
             $data['status'] = 'Under Review';
