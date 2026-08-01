@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\AutoClearsCache;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Listing extends Model
 {
@@ -29,7 +30,6 @@ class Listing extends Model
     ];
 
     protected $casts = [
-        'images' => 'array',
         'accessories' => 'array',
         'is_verified' => 'boolean',
         'price' => 'decimal:2',
@@ -38,6 +38,14 @@ class Listing extends Model
     public function seller()
     {
         return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    protected function images(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? array_map(fn ($path) => url('storage/' . $path), json_decode($value, true)) : [],
+            set: fn ($value) => json_encode($value),
+        );
     }
 
     public function escrowTransactions()

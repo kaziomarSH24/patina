@@ -25,7 +25,7 @@ class RoleSeeder extends Seeder
             ['email' => 'admin@patinawatches.com'],
             [
                 'name' => 'Super Admin',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('11111111'),
                 'phone_number' => '01700000000',
                 'account_standing' => 'good',
                 'email_verified_at' => now(),

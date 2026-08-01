@@ -28,7 +28,7 @@ class ListingController extends Controller
         $request->merge(['include' => 'seller']);
 
         $listings = $this->listingService->getAll(function ($query) {
-            $query->where('status', 'approved')->where('is_verified', true);
+            $query->where('status', 'Live')->where('is_verified', true);
         });
 
         return response_success('Listings retrieved successfully', [
