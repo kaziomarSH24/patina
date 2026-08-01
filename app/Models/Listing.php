@@ -27,6 +27,7 @@ class Listing extends Model
         'location',
         'accessories',
         'images',
+        'brand_certificate',
     ];
 
     protected $casts = [
@@ -45,6 +46,13 @@ class Listing extends Model
         return Attribute::make(
             get: fn ($value) => $value ? array_map(fn ($path) => url('storage/' . $path), json_decode($value, true)) : [],
             set: fn ($value) => json_encode($value),
+        );
+    }
+
+    protected function brandCertificate(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? url('storage/' . $value) : null,
         );
     }
 

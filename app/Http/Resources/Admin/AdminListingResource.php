@@ -36,6 +36,7 @@ class AdminListingResource extends JsonResource
             'accessories' => $this->accessories,
             'condition_notes' => $this->condition_notes,
             'images' => $this->images,
+            'brand_certificate' => $this->brand_certificate,
             'status' => $this->status,
             'is_verified' => $this->is_verified,
             'created_at' => $this->created_at,

@@ -35,6 +35,7 @@ class UpdateListingRequest extends FormRequest
             'condition_notes' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'brand_certificate' => 'nullable|file|mimes:pdf,jpeg,png,jpg,webp|max:10240',
         ];
     }
 }

@@ -33,8 +33,9 @@ class StoreListingRequest extends FormRequest
             'location' => 'nullable|string|max:255',
             'accessories' => 'nullable|array',
             'condition_notes' => 'nullable|string',
-            'images' => 'nullable|array',
+            'images' => 'required|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'brand_certificate' => 'nullable|file|mimes:pdf,jpeg,png,jpg,webp|max:10240',
         ];
     }
 }

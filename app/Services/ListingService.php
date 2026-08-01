@@ -100,6 +100,14 @@ class ListingService extends BaseService
             $data['images'] = $imagePaths;
         }
 
+        // Handle brand certificate upload
+        if ($request->hasFile('brand_certificate')) {
+            $certPath = $request->file('brand_certificate')->store('listings/certificates', 'public');
+            if ($certPath) {
+                $data['brand_certificate'] = $certPath;
+            }
+        }
+
         return $this->create($data);
     }
 
@@ -156,6 +164,14 @@ class ListingService extends BaseService
         if (!empty($imagePaths)) {
             // Append or replace images based on your logic, here we replace for simplicity
             $data['images'] = $imagePaths;
+        }
+
+        // Handle brand certificate upload
+        if ($request->hasFile('brand_certificate')) {
+            $certPath = $request->file('brand_certificate')->store('listings/certificates', 'public');
+            if ($certPath) {
+                $data['brand_certificate'] = $certPath;
+            }
         }
 
         return $this->update($id, $data);
