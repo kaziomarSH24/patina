@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Listing;
 use App\Http\Resources\ListingResource;
 use App\Http\Requests\StoreListingRequest;
+use App\Http\Requests\UpdateListingRequest;
 use App\Services\ListingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -60,6 +61,20 @@ class ListingController extends Controller
         return response_success('Listing created successfully. Waiting for admin review.', [
             'listing' => new ListingResource($listing)
         ], 201);
+    }
+
+    /**
+     * Update an existing listing.
+     */
+    public function update(UpdateListingRequest $request, $id): JsonResponse
+    {
+        $data = $request->validated();
+        
+        $listing = $this->listingService->updateListingWithImages($request, (int) $id, $data);
+
+        return response_success('Listing updated successfully. Resubmitted for review.', [
+            'listing' => new ListingResource($listing)
+        ]);
     }
 
     /**

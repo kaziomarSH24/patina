@@ -102,4 +102,57 @@ class ListingService extends BaseService
 
         return $this->create($data);
     }
+
+    /**
+     * Update an existing listing and handle new images.
+     *
+     * @param Request $request
+     * @param int $id
+     * @param array $data
+     * @return Listing
+     */
+    public function updateListingWithImages(Request $request, int $id, array $data): Listing
+    {
+        $listing = $this->getById($id);
+
+        // Ensure the listing belongs to the authenticated user
+        if ($listing->seller_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // If it was rejected and being updated, we can return it to Under Review
+        if ($listing->status === 'Rejected') {
+            $data['status'] = 'Under Review';
+            $data['is_verified'] = false;
+        }
+
+        // Handle image updates (if new images are provided)
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            $imagesCount = count($request->file('images'));
+            for ($i = 0; $i < $imagesCount; $i++) {
+                $fieldName = "images.{$i}";
+                $path = $this->handleFileUpload(
+                    $request,
+                    $fieldName,
+                    'listings/images',
+                    800,
+                    null,
+                    80,
+                    true
+                );
+
+                if ($path) {
+                    $imagePaths[] = $path;
+                }
+            }
+        }
+        
+        if (!empty($imagePaths)) {
+            // Append or replace images based on your logic, here we replace for simplicity
+            $data['images'] = $imagePaths;
+        }
+
+        return $this->update($id, $data);
+    }
 }

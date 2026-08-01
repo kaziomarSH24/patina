@@ -64,6 +64,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     // Listings (Authenticated user portfolio and creation)
     Route::prefix('listings')->name('api.v1.listings.')->group(function () {
         Route::post('/', [ListingController::class, 'store'])->name('store');
+        Route::post('/{listing}', [ListingController::class, 'update'])->name('update');
     });
 
     Route::prefix('user/listings')->name('api.v1.user.listings.')->group(function () {
