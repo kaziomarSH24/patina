@@ -22,6 +22,7 @@ class ListingService extends BaseService
             'status',
             'is_verified',
             'seller_id',
+            'sale_method',
         ];
     }
 
@@ -68,7 +69,7 @@ class ListingService extends BaseService
     public function createListingWithImages(Request $request, array $data): Listing
     {
         $data['seller_id'] = Auth::id();
-        $data['status'] = 'pending'; // Requires admin review
+        $data['status'] = 'Under Review'; // Requires admin review
         $data['is_verified'] = false; // Requires admin verification
 
         // Handle multiple image uploads using the existing FileUploadTrait

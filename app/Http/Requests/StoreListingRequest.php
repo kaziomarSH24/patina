@@ -22,6 +22,7 @@ class StoreListingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'sale_method' => 'nullable|string|in:marketplace,direct_sale',
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
             'reference_number' => 'nullable|string|max:255',

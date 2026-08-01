@@ -12,6 +12,7 @@ class Listing extends Model
 
     protected $fillable = [
         'seller_id',
+        'sale_method',
         'brand',
         'model',
         'reference_number',

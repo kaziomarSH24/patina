@@ -14,7 +14,7 @@ class AdminListingResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'seller' => [
                 'id' => $this->seller->id,
@@ -27,6 +27,7 @@ class AdminListingResource extends JsonResource
             'brand' => $this->brand,
             'model' => $this->model,
             'reference_number' => $this->reference_number,
+            'sale_method' => $this->sale_method,
             'price' => (float) $this->price,
             'condition' => $this->condition,
             'case_size' => $this->case_size,
@@ -40,5 +41,13 @@ class AdminListingResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+
+        if ($this->sale_method === 'direct_sale') {
+            $margin = round((float) $this->price * 0.15, 2);
+            $data['patina_margin'] = $margin;
+            $data['estimated_payout'] = (float) $this->price - $margin;
+        }
+
+        return $data;
     }
 }
