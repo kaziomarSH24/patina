@@ -51,6 +51,7 @@ class User extends Authenticatable
         'company_name',
         'dealer_tier',
         'kyc_status',
+        'kyc_rejection_reason',
         'account_standing',
         'avatar',
         'otp',

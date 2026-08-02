@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class StoreListingRequest extends FormRequest
 {
@@ -11,7 +12,15 @@ class StoreListingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->kyc_status === 'Verified';
+    }
+
+    /**
+     * Handle a failed authorization attempt.
+     */
+    protected function failedAuthorization()
+    {
+        throw new \Illuminate\Auth\Access\AuthorizationException('You must complete KYC verification before you can create a listing.');
     }
 
     /**
