@@ -99,6 +99,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::prefix('listings')->name('listings.')->group(function () {
             Route::get('/', [AdminListingController::class, 'index'])->name('index');
             Route::get('/{id}', [AdminListingController::class, 'show'])->name('show');
+            Route::patch('/{id}', [AdminListingController::class, 'update'])->name('update');
             Route::patch('/{id}/status', [AdminListingController::class, 'updateStatus'])->name('update-status');
         });
 

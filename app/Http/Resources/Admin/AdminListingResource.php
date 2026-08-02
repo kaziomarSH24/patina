@@ -39,6 +39,8 @@ class AdminListingResource extends JsonResource
             'brand_certificate' => $this->brand_certificate,
             'status' => $this->status,
             'is_verified' => $this->is_verified,
+            'rejection_reason' => $this->rejection_reason,
+            'enquiries' => $this->conversations_count ?? 0,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -13,6 +13,7 @@ class ListingService extends BaseService
     use FileUploadTrait;
 
     protected string $modelClass = Listing::class;
+    protected bool $cachePerUser = true;
 
     protected function getAllowedFilters(): array
     {

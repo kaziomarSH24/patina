@@ -44,6 +44,10 @@ class ListingController extends Controller
     {
         $listing = $this->listingService->getById($id, ['seller']);
 
+        if ($listing->status !== 'Live' && (!Auth::guard('sanctum')->check() || Auth::guard('sanctum')->id() !== $listing->seller_id)) {
+            return response_error('Listing not found or not available', [], 404);
+        }
+
         return response_success('Listing retrieved successfully', [
             'listing' => new ListingResource($listing)
         ]);

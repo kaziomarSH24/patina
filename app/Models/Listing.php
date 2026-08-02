@@ -20,6 +20,7 @@ class Listing extends Model
         'price',
         'status',
         'is_verified',
+        'rejection_reason',
         'condition_notes',
         'condition',
         'case_size',
@@ -69,5 +70,10 @@ class Listing extends Model
     public function offers()
     {
         return $this->hasMany(Offer::class);
+    }
+
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
     }
 }

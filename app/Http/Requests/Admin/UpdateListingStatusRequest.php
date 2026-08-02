@@ -22,8 +22,9 @@ class UpdateListingStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|string|in:Under Review,Live,Rejected,Sold',
+            'status' => 'required|string|in:Under Review,Live,Rejected,Sold,Delisted',
             'is_verified' => 'boolean',
+            'rejection_reason' => 'nullable|string|required_if:status,Rejected',
         ];
     }
 }

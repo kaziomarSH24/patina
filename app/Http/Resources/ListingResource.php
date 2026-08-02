@@ -34,6 +34,7 @@ class ListingResource extends JsonResource
             'images' => $this->images,
             'brand_certificate' => $this->brand_certificate,
             'status' => $this->status,
+            'rejection_reason' => $this->when($this->status === 'Rejected', $this->rejection_reason),
             'is_verified' => $this->is_verified,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
