@@ -11,6 +11,11 @@ use App\Services\ListingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * @group Admin Listings Management
+ *
+ * APIs for managing watch listings in the admin dashboard.
+ */
 class ListingController extends Controller
 {
     protected ListingService $listingService;
@@ -20,7 +25,12 @@ class ListingController extends Controller
         $this->listingService = $listingService;
     }
     /**
-     * Get all listings for admin panel.
+     * List all listings
+     *
+     * Get all listings for admin panel including seller information and conversation counts.
+     *
+     * @apiResourceCollection App\Http\Resources\Admin\AdminListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function index(Request $request): JsonResponse
     {
@@ -35,7 +45,13 @@ class ListingController extends Controller
     }
 
     /**
+     * Get listing details
+     *
      * Get a specific listing details for admin review.
+     *
+     * @urlParam id int required The ID of the listing. Example: 1
+     * @apiResource App\Http\Resources\Admin\AdminListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function show($id): JsonResponse
     {
@@ -48,7 +64,13 @@ class ListingController extends Controller
     }
 
     /**
-     * Update listing status and verification.
+     * Update listing status
+     *
+     * Update listing status (Live, Under Review, Rejected, etc.) and verification flag.
+     *
+     * @urlParam id int required The ID of the listing. Example: 1
+     * @apiResource App\Http\Resources\Admin\AdminListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function updateStatus(UpdateListingStatusRequest $request, $id): JsonResponse
     {
@@ -67,7 +89,13 @@ class ListingController extends Controller
     }
 
     /**
-     * Update listing details.
+     * Update listing details
+     *
+     * Update listing details directly from the admin panel.
+     *
+     * @urlParam id int required The ID of the listing. Example: 1
+     * @apiResource App\Http\Resources\Admin\AdminListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function update(UpdateListingRequest $request, $id): JsonResponse
     {

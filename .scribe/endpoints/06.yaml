@@ -1,0 +1,373 @@
+name: 'Admin Listings Management'
+description: |-
+
+  APIs for managing watch listings in the admin dashboard.
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/admin/listings
+    metadata:
+      custom: []
+      groupName: 'Admin Listings Management'
+      groupDescription: |-
+
+        APIs for managing watch listings in the admin dashboard.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List all listings'
+      description: 'Get all listings for admin panel including seller information and conversation counts.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":1,"seller":{"id":1,"name":"Omar Faruk","email":"kaziomar@yopmail.com","phone_number":"+1234567895","standing":null,"tier":null},"brand":"Casio","model":"Watch- EQS-920DB-1AV","reference_number":"EQS-920DB-1AV","sale_method":"direct_sale","price":26000,"condition":"Excellent","case_size":"41mm","year_of_production":"2026","location":"Kolkata","accessories":["Box","Papers"],"condition_notes":"Mint condition, barely worn.","images":["http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572033_img-4.webp","http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572034_sort-logo.webp"],"brand_certificate":null,"status":"Sold","is_verified":false,"rejection_reason":null,"enquiries":0,"created_at":"2026-08-01T04:53:16.000000Z","updated_at":"2026-08-01T08:22:23.000000Z","patina_margin":3900,"estimated_payout":22100},{"id":1,"seller":{"id":1,"name":"Omar Faruk","email":"kaziomar@yopmail.com","phone_number":"+1234567895","standing":null,"tier":null},"brand":"Casio","model":"Watch- EQS-920DB-1AV","reference_number":"EQS-920DB-1AV","sale_method":"direct_sale","price":26000,"condition":"Excellent","case_size":"41mm","year_of_production":"2026","location":"Kolkata","accessories":["Box","Papers"],"condition_notes":"Mint condition, barely worn.","images":["http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572033_img-4.webp","http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572034_sort-logo.webp"],"brand_certificate":null,"status":"Sold","is_verified":false,"rejection_reason":null,"enquiries":0,"created_at":"2026-08-01T04:53:16.000000Z","updated_at":"2026-08-01T08:22:23.000000Z","patina_margin":3900,"estimated_payout":22100}]}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/admin/listings/{id}'
+    metadata:
+      custom: []
+      groupName: 'Admin Listings Management'
+      groupDescription: |-
+
+        APIs for managing watch listings in the admin dashboard.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get listing details'
+      description: 'Get a specific listing details for admin review.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the listing.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":1,"seller":{"id":1,"name":"Omar Faruk","email":"kaziomar@yopmail.com","phone_number":"+1234567895","standing":null,"tier":null},"brand":"Casio","model":"Watch- EQS-920DB-1AV","reference_number":"EQS-920DB-1AV","sale_method":"direct_sale","price":26000,"condition":"Excellent","case_size":"41mm","year_of_production":"2026","location":"Kolkata","accessories":["Box","Papers"],"condition_notes":"Mint condition, barely worn.","images":["http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572033_img-4.webp","http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572034_sort-logo.webp"],"brand_certificate":null,"status":"Sold","is_verified":false,"rejection_reason":null,"enquiries":0,"created_at":"2026-08-01T04:53:16.000000Z","updated_at":"2026-08-01T08:22:23.000000Z","patina_margin":3900,"estimated_payout":22100}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PATCH
+    uri: 'api/v1/admin/listings/{id}'
+    metadata:
+      custom: []
+      groupName: 'Admin Listings Management'
+      groupDescription: |-
+
+        APIs for managing watch listings in the admin dashboard.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update listing details'
+      description: 'Update listing details directly from the admin panel.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the listing.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      brand:
+        custom: []
+        name: brand
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: b
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      model:
+        custom: []
+        name: model
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: 'n'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      reference_number:
+        custom: []
+        name: reference_number
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: g
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      price:
+        custom: []
+        name: price
+        description: 'Must be at least 0.'
+        required: false
+        example: 12
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      condition:
+        custom: []
+        name: condition
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: m
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      case_size:
+        custom: []
+        name: case_size
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: i
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      year_of_production:
+        custom: []
+        name: year_of_production
+        description: 'Must not be greater than 4 characters.'
+        required: false
+        example: yvdl
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      location:
+        custom: []
+        name: location
+        description: 'Must not be greater than 255 characters.'
+        required: false
+        example: j
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      accessories:
+        custom: []
+        name: accessories
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      condition_notes:
+        custom: []
+        name: condition_notes
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      brand: b
+      model: 'n'
+      reference_number: g
+      price: 12
+      condition: m
+      case_size: i
+      year_of_production: yvdl
+      location: j
+      condition_notes: architecto
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":1,"seller":{"id":1,"name":"Omar Faruk","email":"kaziomar@yopmail.com","phone_number":"+1234567895","standing":null,"tier":null},"brand":"Casio","model":"Watch- EQS-920DB-1AV","reference_number":"EQS-920DB-1AV","sale_method":"direct_sale","price":26000,"condition":"Excellent","case_size":"41mm","year_of_production":"2026","location":"Kolkata","accessories":["Box","Papers"],"condition_notes":"Mint condition, barely worn.","images":["http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572033_img-4.webp","http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572034_sort-logo.webp"],"brand_certificate":null,"status":"Sold","is_verified":false,"rejection_reason":null,"enquiries":0,"created_at":"2026-08-01T04:53:16.000000Z","updated_at":"2026-08-01T08:22:23.000000Z","patina_margin":3900,"estimated_payout":22100}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PATCH
+    uri: 'api/v1/admin/listings/{id}/status'
+    metadata:
+      custom: []
+      groupName: 'Admin Listings Management'
+      groupDescription: |-
+
+        APIs for managing watch listings in the admin dashboard.
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update listing status'
+      description: 'Update listing status (Live, Under Review, Rejected, etc.) and verification flag.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the listing.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      status:
+        custom: []
+        name: status
+        description: ''
+        required: true
+        example: Live
+        type: string
+        enumValues:
+          - 'Under Review'
+          - Live
+          - Rejected
+          - Sold
+          - Delisted
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      is_verified:
+        custom: []
+        name: is_verified
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      rejection_reason:
+        custom: []
+        name: rejection_reason
+        description: 'This field is required when <code>status</code> is <code>Rejected</code>.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      status: Live
+      is_verified: false
+      rejection_reason: architecto
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":1,"seller":{"id":1,"name":"Omar Faruk","email":"kaziomar@yopmail.com","phone_number":"+1234567895","standing":null,"tier":null},"brand":"Casio","model":"Watch- EQS-920DB-1AV","reference_number":"EQS-920DB-1AV","sale_method":"direct_sale","price":26000,"condition":"Excellent","case_size":"41mm","year_of_production":"2026","location":"Kolkata","accessories":["Box","Papers"],"condition_notes":"Mint condition, barely worn.","images":["http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572033_img-4.webp","http:\/\/10.10.28.53:81\/storage\/listings\/images\/1785572034_sort-logo.webp"],"brand_certificate":null,"status":"Sold","is_verified":false,"rejection_reason":null,"enquiries":0,"created_at":"2026-08-01T04:53:16.000000Z","updated_at":"2026-08-01T08:22:23.000000Z","patina_margin":3900,"estimated_payout":22100}}'
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null

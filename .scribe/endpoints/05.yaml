@@ -1,23 +1,23 @@
-name: 'Admin KYC Management'
+name: 'Admin Users Management'
 description: |-
 
-  APIs for admins to review and approve/reject user KYC applications.
+  APIs for managing users in the admin dashboard.
 endpoints:
   -
     custom: []
     httpMethods:
       - GET
-    uri: api/v1/admin/kyc/pending
+    uri: api/v1/admin/users
     metadata:
       custom: []
-      groupName: 'Admin KYC Management'
+      groupName: 'Admin Users Management'
       groupDescription: |-
 
-        APIs for admins to review and approve/reject user KYC applications.
+        APIs for managing users in the admin dashboard.
       subgroup: ''
       subgroupDescription: ''
-      title: 'List pending KYCs'
-      description: 'List all users who have submitted KYC and are waiting for approval.'
+      title: 'List all users'
+      description: 'Get a paginated list of all users for the admin dashboard.'
       authenticated: true
       deprecated: false
     headers:
@@ -31,7 +31,13 @@ endpoints:
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":[{"id":25,"name":"Morgan Hirthe","email":"dare.emelie@example.com","phone":null,"kyc":"pending","kyc_rejection_reason":null,"standing":"good","joined":"Aug 2026","purchases":0,"sales":0},{"id":26,"name":"Prof. Mina Bauch","email":"okeefe.isidro@example.org","phone":null,"kyc":"pending","kyc_rejection_reason":null,"standing":"good","joined":"Aug 2026","purchases":0,"sales":0}]}'
+        headers: []
+        description: ''
     responseFields: []
     auth:
       - headers
@@ -44,17 +50,17 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/v1/admin/kyc/{userId}/documents'
+    uri: 'api/v1/admin/users/{id}/history'
     metadata:
       custom: []
-      groupName: 'Admin KYC Management'
+      groupName: 'Admin Users Management'
       groupDescription: |-
 
-        APIs for admins to review and approve/reject user KYC applications.
+        APIs for managing users in the admin dashboard.
       subgroup: ''
       subgroupDescription: ''
-      title: 'Get user KYC documents'
-      description: "Get a specific user's submitted KYC documents."
+      title: 'Get user history'
+      description: 'Get user history including activity logs and recent transactions.'
       authenticated: true
       deprecated: false
     headers:
@@ -62,25 +68,31 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      userId:
+      id:
         custom: []
-        name: userId
+        name: id
         description: 'The ID of the user.'
         required: true
-        example: '1'
-        type: string
+        example: 1
+        type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      userId: '1'
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
     cleanBodyParameters: []
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":27,"name":"Morgan Hirthe","email":"imclaughlin@example.org","phone":null,"kyc":"pending","kyc_rejection_reason":null,"standing":"good","joined":"Aug 2026","purchases":0,"sales":0}}'
+        headers: []
+        description: ''
     responseFields: []
     auth:
       - headers
@@ -92,18 +104,18 @@ endpoints:
   -
     custom: []
     httpMethods:
-      - POST
-    uri: 'api/v1/admin/kyc/{userId}/approve'
+      - PATCH
+    uri: 'api/v1/admin/users/{id}/standing'
     metadata:
       custom: []
-      groupName: 'Admin KYC Management'
+      groupName: 'Admin Users Management'
       groupDescription: |-
 
-        APIs for admins to review and approve/reject user KYC applications.
+        APIs for managing users in the admin dashboard.
       subgroup: ''
       subgroupDescription: ''
-      title: 'Approve KYC'
-      description: "Approve a user's KYC submission and upgrade them to a dealer role."
+      title: 'Update user account standing'
+      description: 'Update the account standing of a user (Good, Warning, Suspended).'
       authenticated: true
       deprecated: false
     headers:
@@ -111,86 +123,46 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      userId:
+      id:
         custom: []
-        name: userId
+        name: id
         description: 'The ID of the user.'
         required: true
-        example: '1'
-        type: string
+        example: 1
+        type: integer
         enumValues: []
         exampleWasSpecified: true
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      userId: '1'
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - POST
-    uri: 'api/v1/admin/kyc/{userId}/reject'
-    metadata:
-      custom: []
-      groupName: 'Admin KYC Management'
-      groupDescription: |-
-
-        APIs for admins to review and approve/reject user KYC applications.
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Reject KYC'
-      description: "Reject a user's KYC submission and provide a reason."
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer Bearer {YOUR_TOKEN}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      userId:
-        custom: []
-        name: userId
-        description: 'The ID of the user.'
-        required: true
-        example: '1'
-        type: string
-        enumValues: []
-        exampleWasSpecified: true
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      userId: '1'
+      id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters:
-      reason:
+      account_standing:
         custom: []
-        name: reason
-        description: 'Must not be greater than 500 characters.'
+        name: account_standing
+        description: ''
         required: true
-        example: b
+        example: Good
         type: string
-        enumValues: []
+        enumValues:
+          - Good
+          - Watchlist
+          - Suspended
         exampleWasSpecified: false
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      reason: b
+      account_standing: Good
     fileParameters: []
-    responses: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: '{"data":{"id":28,"name":"Morgan Hirthe","email":"ztromp@example.org","phone":null,"kyc":"pending","kyc_rejection_reason":null,"standing":"good","joined":"Aug 2026","purchases":0,"sales":0}}'
+        headers: []
+        description: ''
     responseFields: []
     auth:
       - headers

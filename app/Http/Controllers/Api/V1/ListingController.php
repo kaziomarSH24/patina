@@ -12,6 +12,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @group Listings (Public & User)
+ *
+ * APIs for viewing public listings and managing the user's own portfolio.
+ */
 class ListingController extends Controller
 {
     protected ListingService $listingService;
@@ -21,7 +26,12 @@ class ListingController extends Controller
         $this->listingService = $listingService;
     }
     /**
+     * Public Market Listings
+     *
      * Get all verified and active listings for the Discover/Market views.
+     *
+     * @apiResourceCollection App\Http\Resources\ListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function index(Request $request): JsonResponse
     {
@@ -38,7 +48,13 @@ class ListingController extends Controller
     }
 
     /**
-     * Get a specific listing details.
+     * Show Public Listing
+     *
+     * Get details of a specific listing. Unauthenticated users can only see live listings.
+     *
+     * @urlParam id int required The ID of the listing. Example: 1
+     * @apiResource App\Http\Resources\ListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function show($id): JsonResponse
     {
@@ -54,7 +70,12 @@ class ListingController extends Controller
     }
 
     /**
-     * Create a new listing.
+     * Create Listing
+     *
+     * Create a new listing. Requires the user to have a 'Verified' KYC status.
+     *
+     * @apiResource App\Http\Resources\ListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function store(StoreListingRequest $request): JsonResponse
     {
@@ -68,7 +89,13 @@ class ListingController extends Controller
     }
 
     /**
-     * Update an existing listing.
+     * Update Listing
+     *
+     * Update an existing listing. Will resubmit the listing for admin review.
+     *
+     * @urlParam id int required The ID of the listing to update. Example: 1
+     * @apiResource App\Http\Resources\ListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function update(UpdateListingRequest $request, $id): JsonResponse
     {
@@ -82,7 +109,12 @@ class ListingController extends Controller
     }
 
     /**
-     * Get portfolio listings for the authenticated user.
+     * My Portfolio
+     *
+     * Get all listings (regardless of status) belonging to the authenticated user.
+     *
+     * @apiResourceCollection App\Http\Resources\ListingResource
+     * @apiResourceModel App\Models\Listing
      */
     public function userListings(Request $request): JsonResponse
     {

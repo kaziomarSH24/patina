@@ -12,28 +12,26 @@ return [
     'title' => config('app.name') . ' API Documentation',
 
     // A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
-    'description' => 'Comprehensive SaaS & realtime backend API (Auth, Roles, Chat, Stripe Billing, Subscriptions, Payment Methods, Invoices, File Upload, Reverb events).',
+    'description' => 'Backend API for Patina - Luxury Watch Marketplace.',
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
     'intro_text' => <<<INTRO
-**Welcome to the Boilerplate API.**
+**Welcome to the Patina API Documentation.**
 
-This backend covers: **Authentication**, **Profile**, **Roles & Permissions**, **Realtime Chat**, **Stripe One‑time & Subscription Billing**, **Invoices & Refunds**, **Payment Methods**, **Activity Log**, and **File Uploads**.
+This backend provides endpoints for: **Authentication**, **User & Dealer KYC**, **Watch Listings Management**, **Realtime Chat**, and **Secure Escrow Transactions**.
 
 ### Auth Quick Start
 1. Register/Login to obtain a Bearer token.
 2. Add header: `Authorization: Bearer YOUR_TOKEN`.
-3. Websocket private/presence auth uses the same token at `/broadcasting/auth`.
+3. Use this token to authenticate requests requiring user or admin privileges.
 
-### Response Examples
-Generated samples are illustrative; validate business rules in production.
-
-> Tip: Use the Postman collection or OpenAPI spec for faster integration.
+### Overview
+This documentation lists all available API endpoints, their expected request parameters, and response structures. Use the "Try it out" feature to test APIs directly from this page.
 INTRO,
 
     // The base URL displayed in the docs.
     // If you're using `laravel` type, you can set this to a dynamic string, like '{{ config("app.tenant_url") }}' to get a dynamic base URL.
-    'base_url' => config("app.url"),
+    'base_url' => 'http://10.10.28.53:81',
 
     // Routes to include in the docs
     'routes' => [

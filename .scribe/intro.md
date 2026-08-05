@@ -1,22 +1,20 @@
 # Introduction
 
-Comprehensive SaaS & realtime backend API (Auth, Roles, Chat, Stripe Billing, Subscriptions, Payment Methods, Invoices, File Upload, Reverb events).
+Backend API for Patina - Luxury Watch Marketplace.
 
 <aside>
-    <strong>Base URL</strong>: <code>http://localhost:81</code>
+    <strong>Base URL</strong>: <code>http://10.10.28.53:81</code>
 </aside>
 
-**Welcome to the Boilerplate API.**
+**Welcome to the Patina API Documentation.**
 
-This backend covers: **Authentication**, **Profile**, **Roles & Permissions**, **Realtime Chat**, **Stripe One‑time & Subscription Billing**, **Invoices & Refunds**, **Payment Methods**, **Activity Log**, and **File Uploads**.
+This backend provides endpoints for: **Authentication**, **User & Dealer KYC**, **Watch Listings Management**, **Realtime Chat**, and **Secure Escrow Transactions**.
 
 ### Auth Quick Start
 1. Register/Login to obtain a Bearer token.
 2. Add header: `Authorization: Bearer YOUR_TOKEN`.
-3. Websocket private/presence auth uses the same token at `/broadcasting/auth`.
+3. Use this token to authenticate requests requiring user or admin privileges.
 
-### Response Examples
-Generated samples are illustrative; validate business rules in production.
-
-> Tip: Use the Postman collection or OpenAPI spec for faster integration.
+### Overview
+This documentation lists all available API endpoints, their expected request parameters, and response structures. Use the "Try it out" feature to test APIs directly from this page.
 

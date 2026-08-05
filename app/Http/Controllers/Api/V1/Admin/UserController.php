@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\Admin\UpdateKycStatusRequest;
 
+/**
+ * @group Admin Users Management
+ *
+ * APIs for managing users in the admin dashboard.
+ */
 class UserController extends Controller
 {
     public function __construct(
@@ -17,7 +22,12 @@ class UserController extends Controller
     ) {}
 
     /**
+     * List all users
+     *
      * Get a paginated list of all users for the admin dashboard.
+     *
+     * @apiResourceCollection App\Http\Resources\Admin\UserResource
+     * @apiResourceModel App\Models\User
      */
     public function index()
     {
@@ -37,7 +47,13 @@ class UserController extends Controller
     }
 
     /**
+     * Get user history
+     *
      * Get user history including activity logs and recent transactions.
+     *
+     * @urlParam id int required The ID of the user. Example: 1
+     * @apiResource App\Http\Resources\Admin\UserResource
+     * @apiResourceModel App\Models\User
      */
     public function history(int $id)
     {
@@ -64,7 +80,13 @@ class UserController extends Controller
     }
 
     /**
-     * Update the account standing of a user.
+     * Update user account standing
+     *
+     * Update the account standing of a user (Good, Warning, Suspended).
+     *
+     * @urlParam id int required The ID of the user. Example: 1
+     * @apiResource App\Http\Resources\Admin\UserResource
+     * @apiResourceModel App\Models\User
      */
     public function updateStanding(UpdateUserStandingRequest $request, int $id)
     {

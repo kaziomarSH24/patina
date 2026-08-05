@@ -7,6 +7,11 @@ use App\Http\Requests\Dealer\SubmitKycRequest;
 use App\Services\KycService;
 use Illuminate\Http\Request;
 
+/**
+ * @group User & Dealer KYC
+ *
+ * APIs for users and dealers to submit their KYC documents and check their status.
+ */
 class KycController extends Controller
 {
     protected KycService $kycService;
@@ -17,7 +22,13 @@ class KycController extends Controller
     }
 
     /**
-     * Submit KYC documents.
+     * Submit KYC
+     *
+     * Submit KYC documents for verification.
+     *
+     * @bodyParam id_front file required The front side of the ID card.
+     * @bodyParam id_back file required The back side of the ID card.
+     * @bodyParam selfie file required A selfie of the user holding the ID.
      */
     public function submit(SubmitKycRequest $request)
     {
@@ -40,7 +51,12 @@ class KycController extends Controller
     }
 
     /**
-     * Get the user's KYC status and documents.
+     * Check KYC Status
+     *
+     * Get the authenticated user's current KYC status and submitted documents.
+     *
+     * @apiResource App\Http\Resources\UserKycResource
+     * @apiResourceModel App\Models\User
      */
     public function status(Request $request)
     {

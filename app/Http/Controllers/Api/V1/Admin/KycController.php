@@ -8,6 +8,11 @@ use App\Models\User;
 use App\Services\KycService;
 use Illuminate\Http\Request;
 
+/**
+ * @group Admin KYC Management
+ *
+ * APIs for admins to review and approve/reject user KYC applications.
+ */
 class KycController extends Controller
 {
     protected KycService $kycService;
@@ -18,7 +23,11 @@ class KycController extends Controller
     }
 
     /**
-     * Get a specific user's KYC documents.
+     * Get user KYC documents
+     *
+     * Get a specific user's submitted KYC documents.
+     *
+     * @urlParam userId string required The ID of the user. Example: 1
      */
     public function documents(string $userId)
     {
@@ -31,7 +40,9 @@ class KycController extends Controller
     }
 
     /**
-     * List all pending KYCs.
+     * List pending KYCs
+     *
+     * List all users who have submitted KYC and are waiting for approval.
      */
     public function pending(Request $request)
     {
@@ -48,7 +59,11 @@ class KycController extends Controller
     }
 
     /**
-     * Approve KYC.
+     * Approve KYC
+     *
+     * Approve a user's KYC submission and upgrade them to a dealer role.
+     *
+     * @urlParam userId string required The ID of the user. Example: 1
      */
     public function approve(Request $request, string $userId)
     {
@@ -67,7 +82,11 @@ class KycController extends Controller
     }
 
     /**
-     * Reject KYC.
+     * Reject KYC
+     *
+     * Reject a user's KYC submission and provide a reason.
+     *
+     * @urlParam userId string required The ID of the user. Example: 1
      */
     public function reject(RejectKycRequest $request, string $userId)
     {

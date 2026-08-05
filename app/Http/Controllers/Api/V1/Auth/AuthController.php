@@ -22,12 +22,29 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
+    /**
+     * Register User
+     *
+     * Register a new user account.
+     *
+     * @unauthenticated
+     * @bodyParam password_confirmation string required The password confirmation. Example: password
+     */
     public function register(RegisterRequest $request)
     {
         $this->authService->register($request->validated());
         return response_success('User registered. Please check your email for verification.', [], 201);
     }
 
+    /**
+     * User Login
+     *
+     * Authenticate a user and return a token.
+     *
+     * @unauthenticated
+     * @bodyParam email string required The email of the user. Example: user@example.com
+     * @bodyParam password string required The password of the user. Example: password
+     */
     public function login(Request $request)
     {
         try {
@@ -42,6 +59,11 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * User Logout
+     *
+     * Logout the authenticated user and invalidate the token.
+     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
