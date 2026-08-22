@@ -43,8 +43,8 @@ class KycController extends Controller
         }
 
         try {
-            $documents = $this->kycService->submitDocuments($user, $request);
-            return response_success('KYC documents submitted successfully.', $documents, 201);
+            $documents = $this->kycService->submitDocuments($user, $request->validated(), $request);
+            return response_success('KYC documents submitted successfully.', \App\Http\Resources\KycDocumentResource::collection($documents), 201);
         } catch (\Exception $e) {
             return response_error('Failed to submit KYC documents.', ['trace' => $e->getMessage()], 500);
         }
