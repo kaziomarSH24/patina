@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens, Billable, LogsActivity;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, LogsActivity;
 
     use AutoClearsCache; // Magic Starts Here!
 
