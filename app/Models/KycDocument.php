@@ -14,10 +14,20 @@ class KycDocument extends Model
 
     protected $fillable = [
         'user_id',
+        'legal_name',
         'document_type',
+        'document_number',
+        'dob',
+        'city',
         'file_path',
+        'back_file_path',
+        'selfie_file_path',
         'status',
         'rejection_reason',
+    ];
+
+    protected $casts = [
+        'dob' => 'date',
     ];
 
     /**
@@ -26,6 +36,22 @@ class KycDocument extends Model
     public function getDocumentUrlAttribute()
     {
         return $this->file_path ? Storage::disk('public')->url($this->file_path) : null;
+    }
+
+    /**
+     * Get the URL for the back side of the document.
+     */
+    public function getBackDocumentUrlAttribute()
+    {
+        return $this->back_file_path ? Storage::disk('public')->url($this->back_file_path) : null;
+    }
+
+    /**
+     * Get the URL for the user's selfie.
+     */
+    public function getSelfieUrlAttribute()
+    {
+        return $this->selfie_file_path ? Storage::disk('public')->url($this->selfie_file_path) : null;
     }
 
     /**

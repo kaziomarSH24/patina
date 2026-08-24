@@ -16,9 +16,15 @@ class KycDocumentResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'legal_name' => $this->legal_name,
             'type' => $this->document_type,
+            'document_number' => $this->document_number,
+            'dob' => $this->dob?->format('Y-m-d'),
+            'city' => $this->city,
             'status' => $this->status,
-            'url' => $this->document_url,
+            'front_url' => $this->document_url,
+            'back_url' => $this->back_document_url,
+            'selfie_url' => $this->selfie_url,
             'rejection_reason' => $this->rejection_reason,
             'submitted_at' => $this->created_at?->toIso8601String(),
         ];

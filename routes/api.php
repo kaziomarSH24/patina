@@ -11,19 +11,6 @@ use App\Http\Controllers\Api\V1\Chat\GroupController;
 use App\Http\Controllers\Api\V1\Chat\MessageController;
 use App\Http\Controllers\Api\V1\ListingController;
 use App\Http\Controllers\Api\V1\NotificationController;
-use App\Http\Controllers\Api\V1\Payment\InvoiceController;
-use App\Http\Controllers\Api\V1\Payment\OneTimePaymentController;
-use App\Http\Controllers\Api\V1\Payment\PaymentMethodController;
-use App\Http\Controllers\Api\V1\Payment\RefundController;
-use App\Http\Controllers\Api\V1\Payment\StripePortalController;
-use App\Http\Controllers\Api\V1\Payment\SubscriptionController;
-
-
-
-// Route::post(
-//     '/v1/stripe/webhook',
-//     [WebhookController::class, 'handleWebhook']
-// )->name('cashier.webhook');
 
 // --- Public Routes (Authentication) ---
 Route::prefix('v1/auth')->group(function () {
@@ -71,10 +58,19 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/', [ListingController::class, 'userListings'])->name('index');
     });
 
-    // Dealer/User KYC Routes
+    // Dealer/User KYC & Onboarding Routes
     Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
         Route::post('/submit', [\App\Http\Controllers\Api\V1\Dealer\KycController::class, 'submit'])->name('submit');
         Route::get('/status', [\App\Http\Controllers\Api\V1\Dealer\KycController::class, 'status'])->name('status');
+    });
+
+    // Public Subscription Plans Route
+    Route::get('/subscription-plans', [\App\Http\Controllers\Api\V1\SubscriptionPlanController::class, 'index'])->name('api.v1.subscription-plans.index');
+
+    Route::prefix('dealer')->name('api.v1.dealer.')->group(function () {
+        Route::post('/onboarding/submit', [\App\Http\Controllers\Api\V1\Dealer\OnboardingController::class, 'submit'])->name('onboarding.submit');
+        Route::get('/onboarding/status', [\App\Http\Controllers\Api\V1\Dealer\OnboardingController::class, 'status'])->name('onboarding.status');
+        Route::delete('/onboarding/cancel', [\App\Http\Controllers\Api\V1\Dealer\OnboardingController::class, 'cancel'])->name('onboarding.cancel');
     });
 
     // Admin KYC Routes (Protected by role middleware)
@@ -86,6 +82,17 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
             Route::get('/{userId}/documents', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'documents'])->name('documents');
             Route::post('/{userId}/approve', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'approve'])->name('approve');
             Route::post('/{userId}/reject', [\App\Http\Controllers\Api\V1\Admin\KycController::class, 'reject'])->name('reject');
+        });
+
+        // Admin Subscription Plans
+        Route::apiResource('subscription-plans', \App\Http\Controllers\Api\V1\Admin\SubscriptionPlanController::class);
+
+        // Admin Dealer Applications
+        Route::prefix('dealer-applications')->name('dealer-applications.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\Admin\DealerApplicationController::class, 'index'])->name('index');
+            Route::get('/{id}', [\App\Http\Controllers\Api\V1\Admin\DealerApplicationController::class, 'show'])->name('show');
+            Route::patch('/{id}/status', [\App\Http\Controllers\Api\V1\Admin\DealerApplicationController::class, 'updateStatus'])->name('status');
+            Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Admin\DealerApplicationController::class, 'destroy'])->name('destroy');
         });
 
         // Admin Users
@@ -129,53 +136,6 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
 
         // Real-time
         Route::post('/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('typing');
-    });
-
-
-    //**---Payment Method routes---**//
-    Route::prefix('payment')->name('api.v1.payment.')->group(function () {
-
-        // One-time payment routes
-        Route::prefix('one-time')->name('one-time.')->group(function () {
-            Route::post('/checkout-session', [OneTimePaymentController::class, 'createCheckoutSession'])->name('checkout-session');
-            Route::post('/payment-intent', [OneTimePaymentController::class, 'createPaymentIntent'])->name('payment-intent');
-        });
-
-        // Subscription routes
-        Route::prefix('subscriptions')->name('subscriptions.')->group(function () {
-            Route::post('/', [SubscriptionController::class, 'createSubscription'])->name('create');
-            Route::get('/', [SubscriptionController::class, 'showSubscription'])->name('show');
-            Route::post('/cancel', [SubscriptionController::class, 'cancelSubscription'])->name('cancel');
-            Route::post('/resume', [SubscriptionController::class, 'resumeSubscription'])->name('resume');
-            Route::post('/swap', [SubscriptionController::class, 'swapPlan'])->name('swap');
-        });
-
-        // Refund routes
-        Route::prefix('refunds')->name('refunds.')->group(function () {
-            Route::post('/', [RefundController::class, 'requestRefund'])->name('request');
-        });
-
-        // Invoice routes
-        Route::prefix('invoices')->name('invoices.')->group(function () {
-            Route::get('/', [InvoiceController::class, 'index'])->name('index');
-            Route::get('/{invoice}/download', [InvoiceController::class, 'download'])->name('download');
-        });
-
-        // Payment method routes
-        Route::prefix('payment-methods')->name('payment-methods.')->group(function () {
-            Route::get('/', [PaymentMethodController::class, 'index'])->name('index');
-            Route::post('/', [PaymentMethodController::class, 'store'])->name('store');
-            Route::patch('/{paymentMethod}/set-default', [PaymentMethodController::class, 'setDefault'])->name('set-default');
-            Route::delete('/{paymentMethod}', [PaymentMethodController::class, 'destroy'])->name('destroy');
-            Route::delete('/', [PaymentMethodController::class, 'destroyAll'])->name('destroy-all');
-            //createSetupIntent
-            Route::post('/setup-intent', [PaymentMethodController::class, 'createSetupIntent'])->name('setup-intent');
-            //createSetupSession for save card
-            Route::post('/setup-session', [PaymentMethodController::class, 'createSetupSession'])->name('setup-session');
-        });
-
-        // Stripe billing portal route
-        Route::post('/billing-portal', [StripePortalController::class, 'redirectToPortal'])->name('billing-portal');
     });
 
 

@@ -14,11 +14,16 @@ class SubmitKycRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'trade_license' => 'required_without_all:nid_front,nid_back,passport,utility_bill|file|mimes:jpeg,png,jpg,pdf|max:5120',
-            'nid_front' => 'required_without_all:trade_license,passport,utility_bill|file|mimes:jpeg,png,jpg,pdf|max:5120',
-            'nid_back' => 'required_with:nid_front|file|mimes:jpeg,png,jpg,pdf|max:5120',
-            'passport' => 'sometimes|file|mimes:jpeg,png,jpg,pdf|max:5120',
-            'utility_bill' => 'sometimes|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'legal_name' => 'required|string|max:255',
+            'document_type' => 'required|in:aadhaar,pan,passport',
+            'document_number' => 'required|string|max:50',
+            'dob' => 'required|date|before:today',
+            'city' => 'required|string|max:100',
+            
+            // Files
+            'front_side' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'back_side' => 'required_if:document_type,aadhaar|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'selfie' => 'required|file|mimes:jpeg,png,jpg|max:5120',
         ];
     }
 }

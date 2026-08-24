@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use App\Http\Requests\BaseRequest;
+
+class UpdateSubscriptionPlanRequest extends BaseRequest
+{
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'name' => 'sometimes|string|max:255',
+            'price' => 'sometimes|numeric|min:0',
+            'razorpay_plan_id' => 'nullable|string|max:255',
+            'features' => 'nullable|array',
+            'is_active' => 'boolean',
+        ];
+    }
+}

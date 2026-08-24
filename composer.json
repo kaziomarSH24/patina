@@ -10,7 +10,6 @@
         "dompdf/dompdf": "^3.1",
         "intervention/image": "^3.11",
         "kreait/laravel-firebase": "^6.1",
-        "laravel/cashier": "^15.7",
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone_number')->nullable()->unique();
             $table->string('company_name')->nullable();
-            $table->enum('dealer_tier', ['unverified', 'silver', 'gold', 'platinum'])->default('unverified');
             $table->enum('kyc_status', ['pending', 'submitted', 'approved', 'rejected'])->default('pending');
             $table->enum('account_standing', ['good', 'warning', 'suspended'])->default('good');
             $table->string('avatar')->nullable();

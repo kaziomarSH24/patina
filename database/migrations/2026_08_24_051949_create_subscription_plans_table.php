@@ -11,13 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('followers', function (Blueprint $table) {
+        Schema::create('subscription_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('follower_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('following_id')->constrained('users')->onDelete('cascade');
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->decimal('price', 10, 2);
+            $table->string('razorpay_plan_id')->nullable();
+            $table->json('features')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
-            
-            $table->unique(['follower_id', 'following_id']);
         });
     }
 
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('followers');
+        Schema::dropIfExists('subscription_plans');
     }
 };
