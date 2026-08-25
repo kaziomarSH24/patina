@@ -83,6 +83,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     // Admin KYC Routes (Protected by role middleware)
     Route::middleware(['role:admin'])->prefix('admin')->name('api.v1.admin.')->group(function () {
         
+        // Admin Dealers (Active)
+        Route::get('/dealers', [\App\Http\Controllers\Api\V1\Admin\DealerController::class, 'index'])->name('dealers.index');
+
         // Admin KYC
         Route::prefix('kyc')->name('kyc.')->group(function () {
             Route::get('/pending', [AdminKycController::class, 'pending'])->name('pending');
