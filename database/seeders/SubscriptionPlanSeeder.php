@@ -17,7 +17,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'name' => 'Basic',
                 'slug' => 'basic',
                 'price' => 10000.00,
-                'razorpay_plan_id' => 'plan_basic_dummy',
+                'razorpay_plan_id' => null,
                 'features' => json_encode([
                     'max_listings' => 50,
                     'priority_support' => false,
@@ -31,7 +31,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'name' => 'Professional',
                 'slug' => 'professional',
                 'price' => 20000.00,
-                'razorpay_plan_id' => 'plan_professional_dummy',
+                'razorpay_plan_id' => null,
                 'features' => json_encode([
                     'max_listings' => 200,
                     'priority_support' => true,
@@ -45,7 +45,7 @@ class SubscriptionPlanSeeder extends Seeder
                 'name' => 'Premium',
                 'slug' => 'premium',
                 'price' => 40000.00,
-                'razorpay_plan_id' => 'plan_premium_dummy',
+                'razorpay_plan_id' => null,
                 'features' => json_encode([
                     'max_listings' => -1, // Unlimited
                     'priority_support' => true,

@@ -40,4 +40,9 @@ return [
         'credentials' => base_path(env('FIREBASE_CREDENTIALS')),
     ],
 
+    'razorpay' => [
+        'key' => env('RAZORPAY_KEY'),
+        'secret' => env('RAZORPAY_SECRET'),
+    ],
+
 ];
