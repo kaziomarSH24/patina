@@ -13,6 +13,8 @@ class PortfolioItem extends Model
         'user_id',
         'brand',
         'model',
+        'reference_number',
+        'condition',
         'purchase_price',
         'purchase_date',
     ];

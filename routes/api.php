@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\Admin\SubscriptionPlanController as AdminSubscri
 use App\Http\Controllers\Api\V1\Admin\DealerApplicationController as AdminDealerApplicationController;
 use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
+use App\Http\Controllers\Api\V1\PortfolioController;
 
 // --- Public Routes (Authentication) ---
 Route::prefix('v1/auth')->group(function () {
@@ -56,6 +57,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::prefix('profile')->name('api.v1.profile.')->group(function () {
         Route::get('/me', [ProfileController::class, 'me'])->name('me');
         Route::post('/update', [ProfileController::class, 'updateProfile'])->name('update');
+    });
+
+    // Portfolio related routes
+    Route::prefix('portfolio')->name('api.v1.portfolio.')->group(function () {
+        Route::get('/holdings', [PortfolioController::class, 'holdings'])->name('holdings');
+        Route::post('/holdings', [PortfolioController::class, 'storeHolding'])->name('holdings.store');
+        Route::put('/holdings/{id}', [PortfolioController::class, 'updateHolding'])->name('holdings.update');
+        Route::delete('/holdings/{id}', [PortfolioController::class, 'destroyHolding'])->name('holdings.destroy');
+        Route::get('/listings', [PortfolioController::class, 'listings'])->name('listings');
     });
 
     // Listings (Authenticated user portfolio and creation)
