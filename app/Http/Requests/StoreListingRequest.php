@@ -12,7 +12,7 @@ class StoreListingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->kyc_status === 'Verified';
+        return $this->user() && $this->user()->kyc_status === 'approved';
     }
 
     /**

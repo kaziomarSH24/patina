@@ -135,13 +135,6 @@ class KycService extends BaseService
                     'kyc_status' => $status === 'verified' ? 'approved' : 'submitted'
                 ]);
 
-                // Auto assign role if verified
-                if ($status === 'verified') {
-                    $role = Role::where('name', 'dealer')->where('guard_name', 'web')->first();
-                    if ($role && !$user->hasRole('dealer')) {
-                        $user->assignRole($role);
-                    }
-                }
 
                 return [$document];
             }
@@ -150,17 +143,14 @@ class KycService extends BaseService
         });
     }
 
-    // ... approveUser and rejectUser remain same ...
-    public function approveUser(User $user, string $dealerTier = 'silver')
+    public function approveUser(User $user)
     {
-        return DB::transaction(function () use ($user, $dealerTier) {
+        return DB::transaction(function () use ($user) {
             $docs = $user->kycDocuments()->where('status', 'pending')->get();
             foreach ($docs as $doc) {
                 $this->storeOrUpdate(['status' => 'verified'], $doc);
             }
-            $user->update(['kyc_status' => 'approved', 'dealer_tier' => $dealerTier]);
-            $role = Role::where('name', 'dealer')->where('guard_name', 'web')->first();
-            if ($role && !$user->hasRole('dealer')) { $user->assignRole($role); }
+            $user->update(['kyc_status' => 'approved']);
             return $user;
         });
     }

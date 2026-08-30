@@ -61,7 +61,7 @@ class KycController extends Controller
     /**
      * Approve KYC
      *
-     * Approve a user's KYC submission and upgrade them to a dealer role.
+     * Approve a user's KYC submission.
      *
      * @urlParam userId string required The ID of the user. Example: 1
      */
@@ -75,7 +75,7 @@ class KycController extends Controller
 
         try {
             $this->kycService->approveUser($user);
-            return response_success('User KYC approved and dealer role assigned successfully.');
+            return response_success('User KYC approved successfully.');
         } catch (\Exception $e) {
             return response_error('Failed to approve KYC.', ['trace' => $e->getMessage()], 500);
         }

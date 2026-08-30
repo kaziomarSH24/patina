@@ -34,6 +34,9 @@ Route::prefix('v1/auth')->group(function () {
 
 // Route::post('/upload', [FileController::class, 'handleRequest'])->name('api.v1.file.upload');
 
+// --- Webhooks ---
+Route::post('/webhooks/razorpay', [\App\Http\Controllers\Api\V1\Webhook\RazorpayWebhookController::class, 'handle'])->name('api.v1.webhooks.razorpay');
+
 // --- Public Routes (Listings) ---
 Route::prefix('v1/listings')->group(function () {
     Route::get('/', [ListingController::class, 'index'])->name('api.v1.listings.index');
@@ -78,6 +81,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::post('/onboarding/submit', [DealerOnboardingController::class, 'submit'])->name('onboarding.submit');
         Route::get('/onboarding/status', [DealerOnboardingController::class, 'status'])->name('onboarding.status');
         Route::delete('/onboarding/cancel', [DealerOnboardingController::class, 'cancel'])->name('onboarding.cancel');
+        
+        // Subscription Initiation
+        Route::post('/subscription/initiate', [\App\Http\Controllers\Api\V1\Dealer\SubscriptionController::class, 'initiate'])->name('subscription.initiate');
     });
 
     // Admin KYC Routes (Protected by role middleware)

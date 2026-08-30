@@ -24,4 +24,13 @@ class SubmitOnboardingRequest extends BaseRequest
             'gst_certificate' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ];
     }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->user()->kyc_status !== 'approved') {
+                $validator->errors()->add('kyc_status', 'You must complete and approve identity verification (KYC) before submitting a dealer application.');
+            }
+        });
+    }
 }
