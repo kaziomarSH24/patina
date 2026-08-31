@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\WatchCatalogController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
@@ -68,8 +69,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/listings', [PortfolioController::class, 'listings'])->name('listings');
     });
 
+    // Watch Catalog (Proxy for TheWatchAPI)
+    Route::get('/watch-catalog/search', [WatchCatalogController::class, 'search'])->name('api.v1.watch-catalog.search');
+
     // Listings (Authenticated user portfolio and creation)
     Route::prefix('listings')->name('api.v1.listings.')->group(function () {
+        Route::post('/pay-fee/initiate', [\App\Http\Controllers\Api\V1\ListingFeeController::class, 'initiateFee'])->name('pay-fee.initiate');
         Route::post('/', [ListingController::class, 'store'])->name('store');
         Route::post('/{listing}', [ListingController::class, 'update'])->name('update');
     });

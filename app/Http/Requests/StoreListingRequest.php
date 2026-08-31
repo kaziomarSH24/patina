@@ -45,6 +45,19 @@ class StoreListingRequest extends FormRequest
             'images' => 'required|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'brand_certificate' => 'nullable|file|mimes:pdf,jpeg,png,jpg,webp|max:10240',
+            
+            // Payment fields (Required for non-dealers)
+            'razorpay_payment_id' => 'required_unless:is_dealer,true|string',
+            'razorpay_order_id' => 'required_unless:is_dealer,true|string',
+            'razorpay_signature' => 'required_unless:is_dealer,true|string',
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        // Add a helper field to easily validate if the user is a dealer
+        $this->merge([
+            'is_dealer' => $this->user() && $this->user()->hasRole('dealer') ? 'true' : 'false',
+        ]);
     }
 }

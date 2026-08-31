@@ -45,4 +45,9 @@ return [
         'secret' => env('RAZORPAY_SECRET'),
     ],
 
+    'watch_api' => [
+        'token' => env('WATCH_API_TOKEN'),
+        'base_url' => env('WATCH_API_BASE_URL', 'https://api.thewatchapi.com/v1'),
+    ],
+
 ];

@@ -80,6 +80,24 @@ class ListingController extends Controller
     public function store(StoreListingRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $user = Auth::user();
+
+        // Verify Razorpay Payment for Non-Dealers
+        if (!$user->hasRole('dealer')) {
+            try {
+                $api = new \Razorpay\Api\Api(config('services.razorpay.key'), config('services.razorpay.secret'));
+                
+                $attributes = [
+                    'razorpay_order_id' => $data['razorpay_order_id'],
+                    'razorpay_payment_id' => $data['razorpay_payment_id'],
+                    'razorpay_signature' => $data['razorpay_signature']
+                ];
+                
+                $api->utility->verifyPaymentSignature($attributes);
+            } catch (\Razorpay\Api\Errors\SignatureVerificationError $e) {
+                return response_error('Payment verification failed. Invalid signature.', [], 400);
+            }
+        }
         
         $listing = $this->listingService->createListingWithImages($request, $data);
 

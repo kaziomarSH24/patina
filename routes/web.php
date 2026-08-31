@@ -38,6 +38,11 @@ Route::get('/test-razorpay', function () {
     ]);
 });
 
+// Test Listing Fee Flow (Module B)
+Route::get('/test-listing-fee', function () {
+    return view('test-listing-fee');
+});
+
 //stripe card save test
 Route::get('/card', function () {
     return view('stripe.savecardtest');
