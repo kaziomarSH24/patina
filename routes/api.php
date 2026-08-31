@@ -48,6 +48,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [ListingController::class, 'index'])->name('api.v1.listings.index');
         Route::get('/{id}', [ListingController::class, 'show'])->name('api.v1.listings.show');
     });
+
+    // Market & Price Index
+    Route::prefix('market')->group(function () {
+        Route::get('/price-history/{reference}', [\App\Http\Controllers\Api\V1\MarketController::class, 'priceHistory'])->name('api.v1.market.price-history');
+    });
 });
 
 // --- Protected Routes (User must be logged in) ---
