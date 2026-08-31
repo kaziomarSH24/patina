@@ -16,6 +16,7 @@ class Listing extends Model
         'sale_method',
         'brand',
         'model',
+        'watch_type',
         'reference_number',
         'price',
         'status',

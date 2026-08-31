@@ -34,6 +34,7 @@ class StoreListingRequest extends FormRequest
             'sale_method' => 'nullable|string|in:marketplace,direct_sale',
             'brand' => 'required|string|max:255',
             'model' => 'required|string|max:255',
+            'watch_type' => 'nullable|string|max:100',
             'reference_number' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'condition' => 'required|string|in:Excellent,Very Good,Good,Fair,Vintage',

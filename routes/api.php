@@ -39,10 +39,15 @@ Route::prefix('v1/auth')->group(function () {
 // --- Webhooks ---
 Route::post('/webhooks/razorpay', [\App\Http\Controllers\Api\V1\Webhook\RazorpayWebhookController::class, 'handle'])->name('api.v1.webhooks.razorpay');
 
-// --- Public Routes (Listings) ---
-Route::prefix('v1/listings')->group(function () {
-    Route::get('/', [ListingController::class, 'index'])->name('api.v1.listings.index');
-    Route::get('/{id}', [ListingController::class, 'show'])->name('api.v1.listings.show');
+// --- Public Routes (Listings & Discover) ---
+Route::prefix('v1')->group(function () {
+    // Discover Feed (Mobile Swipe UI - Publicly accessible for viewing)
+    Route::get('/discover', [\App\Http\Controllers\Api\V1\DiscoverController::class, 'index'])->name('api.v1.discover');
+
+    Route::prefix('listings')->group(function () {
+        Route::get('/', [ListingController::class, 'index'])->name('api.v1.listings.index');
+        Route::get('/{id}', [ListingController::class, 'show'])->name('api.v1.listings.show');
+    });
 });
 
 // --- Protected Routes (User must be logged in) ---

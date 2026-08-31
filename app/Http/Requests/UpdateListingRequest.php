@@ -12,7 +12,7 @@ class UpdateListingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->kyc_status === 'Verified';
+        return $this->user() && $this->user()->kyc_status === 'approved';
     }
 
     /**
@@ -34,6 +34,7 @@ class UpdateListingRequest extends FormRequest
             'sale_method' => 'nullable|string|in:marketplace,direct_sale',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
+            'watch_type' => 'nullable|string|max:100',
             'reference_number' => 'nullable|string|max:255',
             'price' => 'nullable|numeric|min:0',
             'condition' => 'nullable|string|in:Excellent,Very Good,Good,Fair,Vintage',

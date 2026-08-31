@@ -23,6 +23,7 @@ class ListingResource extends JsonResource
             ],
             'brand' => $this->brand,
             'model' => $this->model,
+            'watch_type' => $this->watch_type,
             'reference_number' => $this->reference_number,
             'price' => (float) $this->price,
             'condition' => $this->condition,
