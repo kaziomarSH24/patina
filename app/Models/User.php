@@ -154,6 +154,16 @@ class User extends Authenticatable
         return $this->hasMany(Offer::class, 'buyer_id');
     }
 
+    public function conversations()
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_user')->withPivot('role');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
+
     // Activity Log Configuration, it's also customizable
     public function getActivitylogOptions(): LogOptions
     {

@@ -14,12 +14,17 @@ use Illuminate\Support\Str;
 class Conversation extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'created_by'];
+    protected $fillable = ['name', 'created_by', 'listing_id'];
     protected $appends = ['last_message_preview', 'display_name'];
 
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withPivot('role');
+    }
+
+    public function listing(): BelongsTo
+    {
+        return $this->belongsTo(Listing::class);
     }
 
     public function messages(): HasMany

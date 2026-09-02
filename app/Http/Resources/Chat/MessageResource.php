@@ -20,6 +20,8 @@ class MessageResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
+            'type' => $this->type,
+            'metadata' => $this->metadata,
             'media_url' => $this->media_url,
             'media_type' => $this->media_type,
             'sent_at' => $this->created_at,

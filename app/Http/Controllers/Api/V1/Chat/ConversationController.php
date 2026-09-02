@@ -47,36 +47,49 @@ class ConversationController extends Controller
             'user_ids' => 'required|array|min:1',
             'user_ids.*' => 'exists:users,id',
             'name' => 'nullable|string|max:255',
+            'listing_id' => 'nullable|exists:listings,id', // Added listing_id for Patina Market
         ]);
 
         $userIds = array_unique(array_merge($validated['user_ids'], [$request->user()->id]));
         sort($userIds);
+        $listingId = $validated['listing_id'] ?? null;
 
         // If group chat (more than 2 users), always create a new conversation
         if (count($userIds) > 2) {
             $conversation = Conversation::create([
                 'name' => $validated['name'],
                 'created_by' => $request->user()->id,
+                'listing_id' => $listingId,
             ]);
             $conversation->users()->sync($userIds);
             $conversation->users()->updateExistingPivot($request->user()->id, ['role' => 'admin']);
             return new ConversationResource($conversation->load('users'));
         }
 
-        // if 1-on-1 chat, check if conversation already exists
-        $existingConversation = $request->user()->conversations()
-            ->whereHas('users', function ($query) use ($userIds) {
-                $query->whereIn('user_id', $userIds);
+        // if 1-on-1 chat, check if conversation already exists for this specific listing
+        $query = $request->user()->conversations()
+            ->whereHas('users', function ($q) use ($userIds) {
+                $q->whereIn('user_id', $userIds);
             }, '=', count($userIds))
             ->whereHas('users', null, '=', count($userIds))
-            ->whereNull('name')
-            ->first();
+            ->whereNull('name');
+            
+        if ($listingId) {
+            $query->where('listing_id', $listingId);
+        } else {
+            $query->whereNull('listing_id');
+        }
+
+        $existingConversation = $query->first();
 
         if ($existingConversation) {
             return response_success('Conversation already exists.', new ConversationResource($existingConversation->load('users')));
         }
 
-        $conversation = Conversation::create(['created_by' => $request->user()->id]);
+        $conversation = Conversation::create([
+            'created_by' => $request->user()->id,
+            'listing_id' => $listingId,
+        ]);
         $conversation->users()->sync($userIds);
 
         return response_success('Conversation created successfully.', new ConversationResource($conversation->load('users')), 201);

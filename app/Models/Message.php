@@ -11,10 +11,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Message extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $fillable = ['conversation_id', 'user_id', 'body', 'media_url', 'media_type', 'parent_id', 'edited_at'];
+    protected $fillable = ['conversation_id', 'user_id', 'body', 'media_url', 'media_type', 'parent_id', 'edited_at', 'type', 'metadata'];
     protected $with = ['user'];
 
     protected $touches = ['conversation'];
+
+    protected function casts(): array
+    {
+        return [
+            'metadata' => 'array',
+        ];
+    }
 
     /**
      * get the parent message (for threading support)

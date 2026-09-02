@@ -168,6 +168,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
         Route::post('/messages/read', [MessageController::class, 'markAsRead'])->name('messages.read');
 
+        // Offers (Escrow Flow Step 1)
+        Route::post('/conversations/{conversation}/offers', [\App\Http\Controllers\Api\V1\Chat\OfferController::class, 'store'])->name('offers.store');
+        Route::patch('/conversations/{conversation}/offers/{offer}/status', [\App\Http\Controllers\Api\V1\Chat\OfferController::class, 'updateStatus'])->name('offers.status');
+
         // Group Management
         Route::post('/groups/{conversation}/members', [GroupController::class, 'addMember'])->name('groups.members.add');
         Route::delete('/groups/{conversation}/members', [GroupController::class, 'removeMember'])->name('groups.members.remove');
