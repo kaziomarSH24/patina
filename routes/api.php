@@ -1,27 +1,58 @@
 <?php
 
-use App\Http\Controllers\Api\V1\WatchCatalogController;
 use Illuminate\Support\Facades\Route;
+
+// Auth Controllers
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Auth\PasswordController;
 use App\Http\Controllers\Api\V1\Auth\ProfileController;
 use App\Http\Controllers\Api\V1\Auth\VerificationController;
+
+// Public & Core Feature Controllers
+use App\Http\Controllers\Api\V1\DiscoverController;
+use App\Http\Controllers\Api\V1\ListingController;
+use App\Http\Controllers\Api\V1\ListingFeeController;
+use App\Http\Controllers\Api\V1\MarketController;
+use App\Http\Controllers\Api\V1\PortfolioController;
+use App\Http\Controllers\Api\V1\SubscriptionPlanController;
+use App\Http\Controllers\Api\V1\WatchCatalogController;
+
+// Checkout & Escrow Controllers
+use App\Http\Controllers\Api\V1\CheckoutController;
+use App\Http\Controllers\Api\V1\EscrowController;
+
+// Dealer Controllers
+use App\Http\Controllers\Api\V1\Dealer\KycController as DealerKycController;
+use App\Http\Controllers\Api\V1\Dealer\OnboardingController as DealerOnboardingController;
+use App\Http\Controllers\Api\V1\Dealer\SubscriptionController as DealerSubscriptionController;
+
+// Admin Controllers
+use App\Http\Controllers\Api\V1\Admin\DealerApplicationController as AdminDealerApplicationController;
+use App\Http\Controllers\Api\V1\Admin\DealerController as AdminDealerController;
+use App\Http\Controllers\Api\V1\Admin\KycController as AdminKycController;
 use App\Http\Controllers\Api\V1\Admin\ListingController as AdminListingController;
+use App\Http\Controllers\Api\V1\Admin\SubscriptionPlanController as AdminSubscriptionPlanController;
+use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
+
+// Chat Controllers
 use App\Http\Controllers\Api\V1\Chat\ConversationController;
 use App\Http\Controllers\Api\V1\Chat\GroupController;
 use App\Http\Controllers\Api\V1\Chat\MessageController;
-use App\Http\Controllers\Api\V1\ListingController;
-use App\Http\Controllers\Api\V1\NotificationController;
-use App\Http\Controllers\Api\V1\Dealer\KycController as DealerKycController;
-use App\Http\Controllers\Api\V1\Dealer\OnboardingController as DealerOnboardingController;
-use App\Http\Controllers\Api\V1\Admin\KycController as AdminKycController;
-use App\Http\Controllers\Api\V1\Admin\SubscriptionPlanController as AdminSubscriptionPlanController;
-use App\Http\Controllers\Api\V1\Admin\DealerApplicationController as AdminDealerApplicationController;
-use App\Http\Controllers\Api\V1\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Api\V1\SubscriptionPlanController;
-use App\Http\Controllers\Api\V1\PortfolioController;
+use App\Http\Controllers\Api\V1\Chat\OfferController;
 
-// --- Public Routes (Authentication) ---
+// Notification Controller
+use App\Http\Controllers\Api\V1\NotificationController;
+
+// Webhook Controller
+use App\Http\Controllers\Api\V1\Webhook\RazorpayWebhookController;
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+// Authentication
 Route::prefix('v1/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('api.v1.auth.register');
     Route::post('/login', [AuthController::class, 'login'])->name('api.v1.auth.login');
@@ -34,16 +65,16 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/reset-password-with-token', [PasswordController::class, 'resetPasswordWithToken'])->name('api.v1.auth.resetPasswordWithToken');
 });
 
-// Route::post('/upload', [FileController::class, 'handleRequest'])->name('api.v1.file.upload');
+// Webhooks
+Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])->name('api.v1.webhooks.razorpay');
+Route::post('/v1/webhooks/razorpay', [CheckoutController::class, 'webhook'])->name('api.v1.webhooks.razorpay');
 
-// --- Webhooks ---
-Route::post('/webhooks/razorpay', [\App\Http\Controllers\Api\V1\Webhook\RazorpayWebhookController::class, 'handle'])->name('api.v1.webhooks.razorpay');
-
-// --- Public Routes (Listings & Discover) ---
+// Public Listings, Discover & Market
 Route::prefix('v1')->group(function () {
-    // Discover Feed (Mobile Swipe UI - Publicly accessible for viewing)
-    Route::get('/discover', [\App\Http\Controllers\Api\V1\DiscoverController::class, 'index'])->name('api.v1.discover');
+    // Discover Feed (Mobile Swipe UI - Publicly accessible)
+    Route::get('/discover', [DiscoverController::class, 'index'])->name('api.v1.discover');
 
+    // Public Listings
     Route::prefix('listings')->group(function () {
         Route::get('/', [ListingController::class, 'index'])->name('api.v1.listings.index');
         Route::get('/{id}', [ListingController::class, 'show'])->name('api.v1.listings.show');
@@ -51,26 +82,41 @@ Route::prefix('v1')->group(function () {
 
     // Market & Price Index
     Route::prefix('market')->group(function () {
-        Route::get('/price-history/{reference}', [\App\Http\Controllers\Api\V1\MarketController::class, 'priceHistory'])->name('api.v1.market.price-history');
+        Route::get('/feed', [MarketController::class, 'indexFeed'])->name('api.v1.market.feed');
+        Route::get('/price-history/{reference}', [MarketController::class, 'priceHistory'])
+            ->where('reference', '.*')
+            ->name('api.v1.market.price-history');
+    });
+
+    // Watch Data Proxy (For Listing Creation Dropdowns)
+    Route::prefix('watch-data')->group(function () {
+        Route::get('/brands', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'brands'])->name('api.v1.watch-data.brands');
+        Route::get('/models', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'models'])->name('api.v1.watch-data.models');
+        Route::get('/references', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'references'])->name('api.v1.watch-data.references');
     });
 });
 
-// --- Protected Routes (User must be logged in) ---
+/*
+|--------------------------------------------------------------------------
+| Protected Routes (auth:sanctum)
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(function () {
 
-    // Auth related protected routes
+    // Auth (Protected)
     Route::prefix('auth')->name('api.v1.auth.')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::post('/update-password', [PasswordController::class, 'updatePassword'])->name('updatePassword');
     });
 
-    // Profile related protected routes
+    // Profile
     Route::prefix('profile')->name('api.v1.profile.')->group(function () {
         Route::get('/me', [ProfileController::class, 'me'])->name('me');
         Route::post('/update', [ProfileController::class, 'updateProfile'])->name('update');
     });
 
-    // Portfolio related routes
+    // Portfolio
     Route::prefix('portfolio')->name('api.v1.portfolio.')->group(function () {
         Route::get('/holdings', [PortfolioController::class, 'holdings'])->name('holdings');
         Route::post('/holdings', [PortfolioController::class, 'storeHolding'])->name('holdings.store');
@@ -79,43 +125,61 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/listings', [PortfolioController::class, 'listings'])->name('listings');
     });
 
-    // Watch Catalog (Proxy for TheWatchAPI)
+    // Watch Catalog (TheWatchAPI Proxy)
     Route::get('/watch-catalog/search', [WatchCatalogController::class, 'search'])->name('api.v1.watch-catalog.search');
 
-    // Listings (Authenticated user portfolio and creation)
+    // Listings (User management & Creation)
     Route::prefix('listings')->name('api.v1.listings.')->group(function () {
-        Route::post('/pay-fee/initiate', [\App\Http\Controllers\Api\V1\ListingFeeController::class, 'initiateFee'])->name('pay-fee.initiate');
+        Route::post('/pay-fee/initiate', [ListingFeeController::class, 'initiateFee'])->name('pay-fee.initiate');
         Route::post('/', [ListingController::class, 'store'])->name('store');
         Route::post('/{listing}', [ListingController::class, 'update'])->name('update');
+        Route::delete('/{listing}', [ListingController::class, 'destroy'])->name('destroy');
     });
 
+    // User Portfolio (Listings)
     Route::prefix('user/listings')->name('api.v1.user.listings.')->group(function () {
         Route::get('/', [ListingController::class, 'userListings'])->name('index');
     });
 
-    // Dealer/User KYC & Onboarding Routes
+    // Price Alerts
+    Route::prefix('price-alerts')->name('api.v1.price-alerts.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'store'])->name('store');
+        Route::post('/{id}/toggle', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'toggle'])->name('toggle');
+        Route::delete('/{id}', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'destroy'])->name('destroy');
+    });
+
+    // Dealer/User KYC
     Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
         Route::post('/submit', [DealerKycController::class, 'submit'])->name('submit');
         Route::get('/status', [DealerKycController::class, 'status'])->name('status');
     });
 
-    // Public Subscription Plans Route
+    // Subscription Plans
     Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index'])->name('api.v1.subscription-plans.index');
 
+    // Dealer Onboarding & Subscription
     Route::prefix('dealer')->name('api.v1.dealer.')->group(function () {
         Route::post('/onboarding/submit', [DealerOnboardingController::class, 'submit'])->name('onboarding.submit');
         Route::get('/onboarding/status', [DealerOnboardingController::class, 'status'])->name('onboarding.status');
         Route::delete('/onboarding/cancel', [DealerOnboardingController::class, 'cancel'])->name('onboarding.cancel');
-        
-        // Subscription Initiation
-        Route::post('/subscription/initiate', [\App\Http\Controllers\Api\V1\Dealer\SubscriptionController::class, 'initiate'])->name('subscription.initiate');
+        Route::post('/subscription/initiate', [DealerSubscriptionController::class, 'initiate'])->name('subscription.initiate');
     });
 
-    // Admin KYC Routes (Protected by role middleware)
+    // Checkout & Escrow
+    Route::prefix('checkout')->name('api.v1.checkout.')->group(function () {
+        Route::post('/initiate', [CheckoutController::class, 'initiate'])->name('initiate');
+    });
+
+    Route::prefix('escrow')->name('api.v1.escrow.')->group(function () {
+        Route::post('/{escrow}/ship', [EscrowController::class, 'ship'])->name('ship');
+        Route::post('/{escrow}/confirm', [EscrowController::class, 'confirm'])->name('confirm');
+    });
+
+    // Admin Routes (role:admin)
     Route::middleware(['role:admin'])->prefix('admin')->name('api.v1.admin.')->group(function () {
-        
         // Admin Dealers (Active)
-        Route::get('/dealers', [\App\Http\Controllers\Api\V1\Admin\DealerController::class, 'index'])->name('dealers.index');
+        Route::get('/dealers', [AdminDealerController::class, 'index'])->name('dealers.index');
 
         // Admin KYC
         Route::prefix('kyc')->name('kyc.')->group(function () {
@@ -127,6 +191,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
 
         // Admin Subscription Plans
         Route::apiResource('subscription-plans', AdminSubscriptionPlanController::class);
+
+        // Admin Escrow Management
+        Route::post('/escrow/{escrow}/release', [EscrowController::class, 'release'])->name('escrow.release');
 
         // Admin Dealer Applications
         Route::prefix('dealer-applications')->name('dealer-applications.')->group(function () {
@@ -150,12 +217,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
             Route::patch('/{id}', [AdminListingController::class, 'update'])->name('update');
             Route::patch('/{id}/status', [AdminListingController::class, 'updateStatus'])->name('update-status');
         });
-
     });
 
-    /**
-     ** Chat Module Routes
-     */
+    // Chat Module Routes
     Route::prefix('chat')->name('api.v1.chat.')->group(function () {
         // Conversations
         Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
@@ -168,9 +232,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
         Route::post('/messages/read', [MessageController::class, 'markAsRead'])->name('messages.read');
 
-        // Offers (Escrow Flow Step 1)
-        Route::post('/conversations/{conversation}/offers', [\App\Http\Controllers\Api\V1\Chat\OfferController::class, 'store'])->name('offers.store');
-        Route::patch('/conversations/{conversation}/offers/{offer}/status', [\App\Http\Controllers\Api\V1\Chat\OfferController::class, 'updateStatus'])->name('offers.status');
+        // Offers (Escrow Flow)
+        Route::post('/conversations/{conversation}/offers', [OfferController::class, 'store'])->name('offers.store');
+        Route::patch('/conversations/{conversation}/offers/{offer}/status', [OfferController::class, 'updateStatus'])->name('offers.status');
 
         // Group Management
         Route::post('/groups/{conversation}/members', [GroupController::class, 'addMember'])->name('groups.members.add');
@@ -183,8 +247,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::post('/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('typing');
     });
 
-
-    //***--- Notification Routes ---***/
+    // Notification Routes
     Route::prefix('notifications')->name('api.v1.notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/stats', [NotificationController::class, 'stats'])->name('stats');
@@ -193,6 +256,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
+    // Fallback Route
     Route::fallback(function () {
         return response_error('The requested API endpoint does not exist.', [], 404);
     });

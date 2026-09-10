@@ -10,11 +10,18 @@ class EscrowTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'offer_id',
         'listing_id',
         'buyer_id',
         'seller_id',
         'amount',
+        'commission_amount',
         'status',
+        'shipping_provider',
+        'tracking_number',
+        'razorpay_order_id',
+        'razorpay_payment_id',
+        'razorpay_transfer_id',
     ];
 
     protected $casts = [
@@ -24,6 +31,11 @@ class EscrowTransaction extends Model
     public function listing()
     {
         return $this->belongsTo(Listing::class);
+    }
+
+    public function offer()
+    {
+        return $this->belongsTo(Offer::class);
     }
 
     public function buyer()

@@ -32,5 +32,6 @@ class EventServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \App\Models\KycDocument::observe(\App\Observers\KycDocumentObserver::class);
+        \App\Models\Listing::observe(\App\Observers\ListingObserver::class);
     }
 }

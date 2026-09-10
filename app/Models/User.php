@@ -60,6 +60,7 @@ class User extends Authenticatable
         'email_verified_at',
         'is_active',
         'fcm_token',
+        'razorpay_account_id',
     ];
 
     /**

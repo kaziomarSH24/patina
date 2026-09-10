@@ -35,8 +35,25 @@ class MarketController extends Controller
             return response_error('Reference number is required.', [], 400);
         }
 
-        $marketData = $this->marketService->getPriceHistory($reference);
+        try {
+            $marketData = $this->marketService->getPriceHistory($reference);
+            return response_success('Market data retrieved successfully', $marketData);
+        } catch (\Exception $e) {
+            return response_error($e->getMessage(), [], 400);
+        }
+    }
 
-        return response_success('Market data retrieved successfully', $marketData);
+    /**
+     * Get Market Index Feed
+     *
+     * Returns a curated list of popular watches with lightweight market data
+     * (current price, momentum, value badge, and mini chart data) for the
+     * main Price Index feed screen.
+     */
+    public function indexFeed(): JsonResponse
+    {
+        $feedData = $this->marketService->getIndexFeed();
+
+        return response_success('Market feed retrieved successfully', $feedData);
     }
 }

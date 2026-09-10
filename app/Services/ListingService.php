@@ -24,6 +24,22 @@ class ListingService extends BaseService
             'is_verified',
             'seller_id',
             'sale_method',
+            'case_size',
+            'watch_type',
+            'location',
+            \Spatie\QueryBuilder\AllowedFilter::callback('min_price', function ($query, $value) {
+                $query->where('price', '>=', $value);
+            }),
+            \Spatie\QueryBuilder\AllowedFilter::callback('max_price', function ($query, $value) {
+                $query->where('price', '<=', $value);
+            }),
+            \Spatie\QueryBuilder\AllowedFilter::callback('search', function ($query, $value) {
+                $query->where(function ($q) use ($value) {
+                    $q->where('brand', 'like', "%{$value}%")
+                      ->orWhere('model', 'like', "%{$value}%")
+                      ->orWhere('reference_number', 'like', "%{$value}%");
+                });
+            }),
         ];
     }
 

@@ -37,7 +37,7 @@ class OfferController extends Controller
 
         // Check if user is the buyer (not the seller of the listing)
         $listing = $conversation->listing;
-        if ($listing->user_id === $request->user()->id) {
+        if ($listing->seller_id === $request->user()->id) {
             return response_error('You cannot make an offer on your own listing.', [], 400);
         }
 
@@ -93,7 +93,7 @@ class OfferController extends Controller
         }
 
         // Only the seller can accept or decline
-        if ($offer->listing->user_id !== $request->user()->id) {
+        if ($offer->listing->seller_id !== $request->user()->id) {
             return response_error('Only the seller can update the offer status.', [], 403);
         }
 

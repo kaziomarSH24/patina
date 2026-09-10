@@ -20,10 +20,12 @@ use Illuminate\Support\Facades\Auth;
 class ListingController extends Controller
 {
     protected ListingService $listingService;
+    protected \App\Services\MarketService $marketService;
 
-    public function __construct(ListingService $listingService)
+    public function __construct(ListingService $listingService, \App\Services\MarketService $marketService)
     {
         $this->listingService = $listingService;
+        $this->marketService = $marketService;
     }
     /**
      * Public Market Listings
@@ -64,8 +66,20 @@ class ListingController extends Controller
             return response_error('Listing not found or not available', [], 404);
         }
 
+        // Fetch market data for this listing
+        $marketData = null;
+        if (!empty($listing->reference_number)) {
+            try {
+                $marketData = $this->marketService->getPriceHistory($listing->reference_number);
+            } catch (\Exception $e) {
+                // Ignore API failures and just return null market data
+                $marketData = null;
+            }
+        }
+
         return response_success('Listing retrieved successfully', [
-            'listing' => new ListingResource($listing)
+            'listing' => new ListingResource($listing),
+            'market_data' => $marketData
         ]);
     }
 
@@ -146,5 +160,29 @@ class ListingController extends Controller
         return response_success('User portfolio retrieved successfully', [
             'listings' => ListingResource::collection($listings)->response()->getData(true)
         ]);
+    }
+
+    /**
+     * Delete Listing
+     *
+     * Delete a listing. Only the owner can delete it, and only if it's not Sold.
+     *
+     * @urlParam id int required The ID of the listing to delete. Example: 1
+     */
+    public function destroy($id): JsonResponse
+    {
+        $listing = $this->listingService->getById($id);
+
+        if ($listing->seller_id !== Auth::id()) {
+            return response_error('Unauthorized action.', [], 403);
+        }
+
+        if ($listing->status === 'Sold') {
+            return response_error('Cannot delete a sold listing.', [], 400);
+        }
+
+        $this->listingService->delete($id);
+
+        return response_success('Listing deleted successfully.');
     }
 }

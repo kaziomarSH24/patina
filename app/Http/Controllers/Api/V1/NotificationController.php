@@ -21,7 +21,6 @@ class NotificationController extends Controller
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
-        $this->authorizeResource(DatabaseNotification::class, 'notification');
     }
 
     /**
@@ -60,6 +59,10 @@ class NotificationController extends Controller
      */
     public function markAsRead(DatabaseNotification $notification)
     {
+        if ($notification->notifiable_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $this->notificationService->markAsRead($notification);
         return response_success('Notification marked as read.');
     }
@@ -84,6 +87,10 @@ class NotificationController extends Controller
      */
     public function destroy(DatabaseNotification $notification)
     {
+        if ($notification->notifiable_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $this->notificationService->delete($notification);
         return response_success('Notification deleted successfully.');
     }
