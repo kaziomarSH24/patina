@@ -59,6 +59,8 @@ class User extends Authenticatable
         'verification_token',
         'email_verified_at',
         'is_active',
+        'average_rating',
+        'total_reviews',
         'fcm_token',
         'razorpay_account_id',
     ];
