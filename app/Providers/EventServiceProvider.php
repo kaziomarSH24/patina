@@ -33,5 +33,6 @@ class EventServiceProvider extends ServiceProvider
     {
         \App\Models\KycDocument::observe(\App\Observers\KycDocumentObserver::class);
         \App\Models\Listing::observe(\App\Observers\ListingObserver::class);
+        \App\Models\Review::observe(\App\Observers\ReviewObserver::class);
     }
 }

@@ -155,6 +155,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::post('/toggle', [\App\Http\Controllers\Api\V1\WishlistController::class, 'toggle'])->name('toggle');
     });
 
+    // Reviews
+    Route::post('/reviews', [\App\Http\Controllers\Api\V1\ReviewController::class, 'store'])->name('api.v1.reviews.store');
+    Route::get('/users/{user}/reviews', [\App\Http\Controllers\Api\V1\ReviewController::class, 'userReviews'])->name('api.v1.users.reviews');
+
     // Dealer/User KYC
     Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
         Route::post('/submit', [DealerKycController::class, 'submit'])->name('submit');
