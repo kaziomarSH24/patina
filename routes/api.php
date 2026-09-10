@@ -149,6 +149,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'destroy'])->name('destroy');
     });
 
+    // Wishlists (Favorites)
+    Route::prefix('wishlists')->name('api.v1.wishlists.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\V1\WishlistController::class, 'index'])->name('index');
+        Route::post('/toggle', [\App\Http\Controllers\Api\V1\WishlistController::class, 'toggle'])->name('toggle');
+    });
+
     // Dealer/User KYC
     Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
         Route::post('/submit', [DealerKycController::class, 'submit'])->name('submit');
