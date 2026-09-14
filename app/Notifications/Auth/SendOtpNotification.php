@@ -35,7 +35,7 @@ class SendOtpNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', \App\Channels\Msg91Channel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -50,5 +50,13 @@ class SendOtpNotification extends Notification implements ShouldQueue
             'expireInMinutes' => 10,
             'reason' => $this->reason,
         ]);
+    }
+
+    public function toMsg91(object $notifiable): array
+    {
+        return [
+            'otp' => $this->otp,
+            'reason' => $this->reason
+        ];
     }
 }
