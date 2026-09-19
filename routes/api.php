@@ -163,6 +163,10 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
         Route::post('/submit', [DealerKycController::class, 'submit'])->name('submit');
         Route::get('/status', [DealerKycController::class, 'status'])->name('status');
+
+        // Sandbox Verification (For testing & frontend integration)
+        Route::post('/sandbox/verify-pan', [\App\Http\Controllers\KycController::class, 'verifyPan'])->name('sandbox.verify-pan');
+        Route::post('/sandbox/verify-bank', [\App\Http\Controllers\KycController::class, 'verifyBank'])->name('sandbox.verify-bank');
     });
 
     // Subscription Plans
