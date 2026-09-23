@@ -39,24 +39,27 @@ class DealerOnboardingService extends BaseService
      */
     public function submitApplication(User $user, array $data): DealerProfile
     {
-        // 1. Verify PAN
+        // 1. Verify PAN (Pass user's registered name to match)
         $kycService = app(\App\Services\SandboxKycService::class);
-        $panResult = $kycService->verifyPan($data['pan_number']);
+        $panResult = $kycService->verifyPan($data['pan_number'], $user->name);
         
         if (!$panResult['success']) {
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'pan_number' => ['PAN verification failed. Please provide a valid PAN.']
+                'pan_number' => ['PAN verification failed or Name on PAN does not match your registered account name.']
             ]);
         }
 
-        // 2. Verify Bank Account
-        $bankResult = $kycService->verifyBankAccount($data['bank_account_number'], $data['bank_ifsc']);
+        // 2. Verify Bank Account (Pass user's registered name to match)
+        $bankResult = $kycService->verifyBankAccount($data['bank_account_number'], $data['bank_ifsc'], $user->name);
         if (!$bankResult['success']) {
             throw \Illuminate\Validation\ValidationException::withMessages([
-                'bank_account_number' => ['Bank account verification failed. Please check your account number and IFSC.']
+                'bank_account_number' => ['Bank account verification failed or Account Holder Name does not match.']
             ]);
         }
         
+        // Extract exact beneficiary name from bank response if available
+        $data['bank_beneficiary_name'] = $bankResult['data']['data']['name_at_bank'] ?? $user->name;
+
         // 3. Mark User KYC as approved automatically
         $user->kyc_status = 'approved';
         $user->save();
