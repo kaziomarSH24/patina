@@ -39,6 +39,28 @@ class DealerOnboardingService extends BaseService
      */
     public function submitApplication(User $user, array $data): DealerProfile
     {
+        // 1. Verify PAN
+        $kycService = app(\App\Services\SandboxKycService::class);
+        $panResult = $kycService->verifyPan($data['pan_number']);
+        
+        if (!$panResult['success']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'pan_number' => ['PAN verification failed. Please provide a valid PAN.']
+            ]);
+        }
+
+        // 2. Verify Bank Account
+        $bankResult = $kycService->verifyBankAccount($data['bank_account_number'], $data['bank_ifsc']);
+        if (!$bankResult['success']) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'bank_account_number' => ['Bank account verification failed. Please check your account number and IFSC.']
+            ]);
+        }
+        
+        // 3. Mark User KYC as approved automatically
+        $user->kyc_status = 'approved';
+        $user->save();
+
         $existingProfile = DealerProfile::where('user_id', $user->id)->first() ?? new DealerProfile();
 
         // Handle GST certificate upload if provided
