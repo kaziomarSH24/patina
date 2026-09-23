@@ -20,11 +20,17 @@ class SubmitOnboardingRequest extends BaseRequest
             'approx_monthly_inventory' => 'nullable|string|max:255',
             'website_link' => 'nullable|url|max:255',
             'gst_number' => 'nullable|string|max:50',
-            'pan_number' => 'required|string|max:50',
-            'bank_account_number' => 'required|string|max:50',
-            'bank_ifsc' => 'required|string|max:20',
-            'bank_beneficiary_name' => 'nullable|string|max:255',
+            'pan_number' => 'nullable|string|max:50',
             'gst_certificate' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->user()->kyc_status !== 'approved') {
+                $validator->errors()->add('kyc_status', 'You must complete and approve identity verification (KYC) before submitting a dealer application.');
+            }
+        });
     }
 }

@@ -90,23 +90,40 @@ class KycService extends BaseService
             }
 
             if ($frontFilePath && $selfieFilePath) {
-                // Call Mock Provider
-                $verificationResponse = $this->kycProvider->verifyDocument([
-                    'type' => $docType,
-                    'file_path' => $frontFilePath,
-                    'selfie_path' => $selfieFilePath,
-                    'user_id' => $user->id,
-                    'legal_name' => $validatedData['legal_name'],
-                    'document_number' => $validatedData['document_number']
-                ]);
-
+                
                 $status = 'pending';
-                if (isset($verificationResponse['result']['summary']['action'])) {
-                    $action = $verificationResponse['result']['summary']['action'];
-                    if ($action === 'pass') {
+                $rejectionReason = null;
+
+                // Use Sandbox API for PAN
+                if ($docType === 'pan') {
+                    $sandboxService = app(\App\Services\SandboxKycService::class);
+                    $panResult = $sandboxService->verifyPan($validatedData['document_number'], $validatedData['legal_name']);
+                    
+                    if ($panResult['success']) {
                         $status = 'verified';
-                    } elseif ($action === 'fail') {
+                    } else {
                         $status = 'rejected';
+                        $rejectionReason = 'Sandbox API PAN Verification Failed or Name Mismatch.';
+                    }
+                } else {
+                    // Call Mock Provider for other documents (like Aadhaar, Passport)
+                    $verificationResponse = $this->kycProvider->verifyDocument([
+                        'type' => $docType,
+                        'file_path' => $frontFilePath,
+                        'selfie_path' => $selfieFilePath,
+                        'user_id' => $user->id,
+                        'legal_name' => $validatedData['legal_name'],
+                        'document_number' => $validatedData['document_number']
+                    ]);
+
+                    if (isset($verificationResponse['result']['summary']['action'])) {
+                        $action = $verificationResponse['result']['summary']['action'];
+                        if ($action === 'pass') {
+                            $status = 'verified';
+                        } elseif ($action === 'fail') {
+                            $status = 'rejected';
+                            $rejectionReason = 'AI Verification Failed (Details or Face Mismatch)';
+                        }
                     }
                 }
 
@@ -121,7 +138,7 @@ class KycService extends BaseService
                     'back_file_path' => $backFilePath,
                     'selfie_file_path' => $selfieFilePath,
                     'status' => $status,
-                    'rejection_reason' => $status === 'rejected' ? 'AI Verification Failed (Details or Face Mismatch)' : null
+                    'rejection_reason' => $rejectionReason
                 ];
 
                 $existingDoc = KycDocument::where('user_id', $user->id)
