@@ -88,6 +88,9 @@ Route::prefix('v1')->group(function () {
             ->name('api.v1.market.price-history');
     });
 
+    // Public Dealer Directory
+    Route::get('/dealers', [\App\Http\Controllers\Api\V1\PublicDealerController::class, 'index'])->name('api.v1.dealers.index');
+
     // Watch Data Proxy (For Listing Creation Dropdowns)
     Route::prefix('watch-data')->group(function () {
         Route::get('/brands', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'brands'])->name('api.v1.watch-data.brands');
