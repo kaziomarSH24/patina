@@ -32,6 +32,10 @@ class User extends Authenticatable
 
     public function getAvatarAttribute($value)
     {
+        if ($value && \Illuminate\Support\Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+
         $encodedName = urlencode($this->name ?? 'User');
 
         return $value
