@@ -46,7 +46,12 @@ class Listing extends Model
     protected function images(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $value ? array_map(fn ($path) => url('storage/' . $path), json_decode($value, true)) : [],
+            get: fn ($value) => $value ? array_map(function ($path) {
+                if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+                    return $path;
+                }
+                return url('storage/' . $path);
+            }, json_decode($value, true)) : [],
             set: fn ($value) => json_encode($value),
         );
     }
