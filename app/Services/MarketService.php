@@ -199,21 +199,67 @@ class MarketService
             ];
         }
 
-        // Add Overall Market Aggregate Logic for the Chart
-        $overallIndexValue = 1484.49; // Simulated baseline for the index
-        $overallMomentum = 48.45;     // Simulated overall growth
+        // -------------------------------------------------------------
+        // DYNAMIC OVERALL MARKET INDEX CALCULATION
+        // -------------------------------------------------------------
+        $monthlyAggregates = [];
+        
+        foreach ($popularWatches as $watch) {
+            try {
+                $history = $this->getPriceHistory($watch['reference_number']);
+                $sixMonthData = $history['chart_data']['6M'] ?? [];
+                
+                foreach ($sixMonthData as $dataPoint) {
+                    $monthKey = date('M Y', strtotime($dataPoint['date'])); // e.g., 'Jan 2024'
+                    $displayMonth = date('M', strtotime($dataPoint['date'])); // e.g., 'Jan'
+                    
+                    if (!isset($monthlyAggregates[$monthKey])) {
+                        $monthlyAggregates[$monthKey] = [
+                            'display' => $displayMonth,
+                            'prices' => []
+                        ];
+                    }
+                    $monthlyAggregates[$monthKey]['prices'][] = $dataPoint['price'];
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
 
-        // Generate some realistic looking line chart data for Jan-Jun
-        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
         $chartData = [];
-        $baseValue = 1000;
-        foreach ($months as $month) {
-            $baseValue += rand(50, 150);
-            $chartData[] = [
-                'date' => $month,
-                'price' => $baseValue
+        $indexDivisor = 10; // Scale down the raw average price to make it look like an index point (e.g. $15,000 -> 1,500.00)
+
+        if (!empty($monthlyAggregates)) {
+            // Sort by month ascending using strtotime
+            uksort($monthlyAggregates, function($a, $b) {
+                return strtotime($a) <=> strtotime($b);
+            });
+
+            foreach ($monthlyAggregates as $monthKey => $data) {
+                $prices = $data['prices'];
+                $averagePrice = count($prices) > 0 ? array_sum($prices) / count($prices) : 0;
+                $indexValue = $averagePrice > 0 ? $averagePrice / $indexDivisor : 0;
+                
+                $chartData[] = [
+                    'date' => $data['display'], // e.g., 'Jan'
+                    'price' => round($indexValue, 2)
+                ];
+            }
+        } else {
+            // Fallback flat line if no historical data exists from the API
+            $chartData = [
+                ['date' => date('M', strtotime('-5 months')), 'price' => 1000],
+                ['date' => date('M', strtotime('-4 months')), 'price' => 1000],
+                ['date' => date('M', strtotime('-3 months')), 'price' => 1000],
+                ['date' => date('M', strtotime('-2 months')), 'price' => 1000],
+                ['date' => date('M', strtotime('-1 months')), 'price' => 1000],
+                ['date' => date('M'), 'price' => 1000],
             ];
         }
+
+        $overallIndexValue = count($chartData) > 0 ? end($chartData)['price'] : 1000;
+        $firstValue = count($chartData) > 0 ? $chartData[0]['price'] : 1000;
+        $overallMomentum = $firstValue > 0 ? (($overallIndexValue - $firstValue) / $firstValue) * 100 : 0;
 
         return [
             'overall_performance' => [
