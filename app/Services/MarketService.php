@@ -199,6 +199,29 @@ class MarketService
             ];
         }
 
-        return $feed;
+        // Add Overall Market Aggregate Logic for the Chart
+        $overallIndexValue = 1484.49; // Simulated baseline for the index
+        $overallMomentum = 48.45;     // Simulated overall growth
+
+        // Generate some realistic looking line chart data for Jan-Jun
+        $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        $chartData = [];
+        $baseValue = 1000;
+        foreach ($months as $month) {
+            $baseValue += rand(50, 150);
+            $chartData[] = [
+                'date' => $month,
+                'price' => $baseValue
+            ];
+        }
+
+        return [
+            'overall_performance' => [
+                'current_value' => round($overallIndexValue, 2),
+                'momentum_percentage' => round($overallMomentum, 2),
+                'chart_data' => $chartData
+            ],
+            'feed' => $feed
+        ];
     }
 }
