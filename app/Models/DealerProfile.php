@@ -20,9 +20,6 @@ class DealerProfile extends Model
         'website_link',
         'gst_number',
         'pan_number',
-        'bank_account_number',
-        'bank_ifsc',
-        'bank_beneficiary_name',
         'gst_certificate_path',
         'status',
     ];
