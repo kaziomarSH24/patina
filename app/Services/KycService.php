@@ -96,8 +96,13 @@ class KycService extends BaseService
 
                 // Use Sandbox API for PAN
                 if ($docType === 'pan') {
-                    $sandboxService = app(\App\Services\SandboxKycService::class);
-                    $panResult = $sandboxService->verifyPan($validatedData['document_number'], $validatedData['legal_name']);
+                    // Magic PAN for Testing Bypasses Sandbox
+                    if ($validatedData['document_number'] === 'TESTPASS12' && config('app.env') === 'local') {
+                        $panResult = ['success' => true];
+                    } else {
+                        $sandboxService = app(\App\Services\SandboxKycService::class);
+                        $panResult = $sandboxService->verifyPan($validatedData['document_number'], $validatedData['legal_name']);
+                    }
                     
                     if ($panResult['success']) {
                         $status = 'verified';
