@@ -27,6 +27,8 @@ class ListingService extends BaseService
             'case_size',
             'watch_type',
             'location',
+            'condition',
+            'year_of_production',
             \Spatie\QueryBuilder\AllowedFilter::callback('min_price', function ($query, $value) {
                 $query->where('price', '>=', $value);
             }),
