@@ -89,7 +89,7 @@ class KycService extends BaseService
                 );
             }
 
-            if ($frontFilePath && $selfieFilePath) {
+            if ($frontFilePath) {
                 
                 $status = 'pending';
                 $rejectionReason = null;
@@ -103,14 +103,16 @@ class KycService extends BaseService
                         $status = 'verified';
                     } else {
                         $status = 'rejected';
-                        $rejectionReason = 'Sandbox API PAN Verification Failed or Name Mismatch.';
+                        $errorMsg = $panResult['data']['message'] ?? json_encode($panResult['data'] ?? []);
+                        $rejectionReason = 'Sandbox API Verification Failed: ' . $errorMsg;
+                        \Illuminate\Support\Facades\Log::error("Sandbox Rejection Details: " . $errorMsg);
                     }
                 } else {
                     // Call Mock Provider for other documents (like Aadhaar, Passport)
                     $verificationResponse = $this->kycProvider->verifyDocument([
                         'type' => $docType,
                         'file_path' => $frontFilePath,
-                        'selfie_path' => $selfieFilePath,
+                        'selfie_path' => $selfieFilePath, // Can be null
                         'user_id' => $user->id,
                         'legal_name' => $validatedData['legal_name'],
                         'document_number' => $validatedData['document_number']
@@ -148,10 +150,16 @@ class KycService extends BaseService
                 $document = $this->storeOrUpdate($documentData, $existingDoc);
 
                 // Update User Status
-                $user->update([
-                    'kyc_status' => $status === 'verified' ? 'approved' : 'submitted'
-                ]);
+                $userStatus = 'submitted';
+                if ($status === 'verified') {
+                    $userStatus = 'approved';
+                } elseif ($status === 'rejected') {
+                    $userStatus = 'rejected';
+                }
 
+                $user->update([
+                    'kyc_status' => $userStatus
+                ]);
 
                 return [$document];
             }
