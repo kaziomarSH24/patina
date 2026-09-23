@@ -34,11 +34,27 @@ class ListingResource extends JsonResource
             'condition_notes' => $this->condition_notes,
             'images' => $this->images,
             'brand_certificate' => $this->brand_certificate,
+            'market_momentum' => $this->getMarketMomentum(),
             'status' => $this->status,
             'rejection_reason' => $this->when($this->status === 'Rejected', $this->rejection_reason),
             'is_verified' => $this->is_verified,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    protected function getMarketMomentum()
+    {
+        if (empty($this->reference_number)) {
+            return null;
+        }
+
+        try {
+            $marketService = app(\App\Services\MarketService::class);
+            $history = $marketService->getPriceHistory($this->reference_number);
+            return $history['indicators']['momentum_1m_percentage'] ?? null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
