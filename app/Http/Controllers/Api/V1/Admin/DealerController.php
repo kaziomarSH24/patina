@@ -10,7 +10,7 @@ class DealerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::role('dealer')->with(['dealerProfile.plan']);
+        $query = User::role('dealer')->with(['dealerProfile.plan'])->withCount('listings');
 
         if ($request->has('search')) {
             $search = $request->search;
@@ -35,8 +35,8 @@ class DealerController extends Controller
                 'since' => $profile ? $profile->created_at->format('Y') : $user->created_at->format('Y'),
                 'tier' => $plan ? $plan->name : 'N/A',
                 'kyc' => ucfirst($user->kyc_status ?? 'pending'),
-                // Mocking credits until a Listing Credit system is fully built
-                'creditUsage' => rand(0, $plan ? $plan->listing_limit : 10), 
+                // Real usage from user's active listings
+                'creditUsage' => $user->listings_count ?? 0, 
                 'creditLimit' => $plan ? $plan->listing_limit : 0,
                 'subscription' => $profile && $profile->status === 'approved' ? 'Active' : 'Pending',
             ];
