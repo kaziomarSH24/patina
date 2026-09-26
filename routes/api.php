@@ -193,8 +193,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::post('/{escrow}/confirm', [EscrowController::class, 'confirm'])->name('confirm');
     });
 
-    // Admin Routes (role:admin)
-    Route::middleware(['role:admin'])->prefix('admin')->name('api.v1.admin.')->group(function () {
+    // Admin Routes (auth + role:admin)
+    Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('api.v1.admin.')->group(function () {
         // Admin Dealers (Active)
         Route::get('/dealers', [AdminDealerController::class, 'index'])->name('dealers.index');
 
