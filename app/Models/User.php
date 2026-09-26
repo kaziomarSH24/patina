@@ -101,6 +101,11 @@ class User extends Authenticatable
         return $this->hasMany(FcmToken::class);
     }
 
+    public function dealerProfile()
+    {
+        return $this->hasOne(DealerProfile::class);
+    }
+
     public function kycDocuments(): HasMany
     {
         return $this->hasMany(KycDocument::class);
