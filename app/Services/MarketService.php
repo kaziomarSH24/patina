@@ -42,22 +42,22 @@ class MarketService
             // Ignore if search fails
         }
         
-        // Try to find an image from our own listings
+        // Try to find images from our own listings
         $listing = Listing::where('reference_number', $reference)
             ->whereNotNull('images')
             ->latest()
             ->first();
             
-        $image = null;
+        $images = [];
         if ($listing && !empty($listing->images)) {
-            $image = is_array($listing->images) ? $listing->images[0] : $listing->images;
+            $images = is_array($listing->images) ? $listing->images : [$listing->images];
         }
 
         if (empty($historyData)) {
             return [
                 'reference_number' => $reference,
                 'current_market_price' => 0,
-                'image' => $image,
+                'images' => $images,
                 'product_details' => $productDetails,
                 'indicators' => [
                     '52w_high' => 0,
@@ -105,35 +105,10 @@ class MarketService
         
         $momentum = $price30DaysAgo > 0 ? (($currentPrice - $price30DaysAgo) / $price30DaysAgo) * 100 : 0;
 
-        // Try to fetch watch generic details
-        $productDetails = null;
-        try {
-            $searchResults = $this->watchApiService->searchModels($reference);
-            foreach ($searchResults as $result) {
-                if (strcasecmp($result['reference_number'] ?? '', $reference) === 0) {
-                    $productDetails = $result;
-                    break;
-                }
-            }
-        } catch (\Exception $e) {
-            // Ignore if search fails
-        }
-        
-        // Try to find an image from our own listings
-        $listing = Listing::where('reference_number', $reference)
-            ->whereNotNull('images')
-            ->latest()
-            ->first();
-            
-        $image = null;
-        if ($listing && !empty($listing->images)) {
-            $image = is_array($listing->images) ? $listing->images[0] : $listing->images;
-        }
-
         return [
             'reference_number' => $reference,
             'current_market_price' => round($currentPrice, 2),
-            'image' => $image,
+            'images' => $images,
             'product_details' => $productDetails,
             'indicators' => [
                 '52w_high' => round($high52W, 2),
