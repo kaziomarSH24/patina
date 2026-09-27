@@ -9,6 +9,7 @@ use App\Services\Admin\UserService;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Http\Requests\Admin\UpdateKycStatusRequest;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @group Admin Users Management
@@ -31,7 +32,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', User::class);
+        Gate::authorize('viewAny', User::class);
 
         // We pass a closure to the service's getAll method to attach the counts for purchases and sales
         $users = $this->userService->getAll(function ($query) {
@@ -57,7 +58,7 @@ class UserController extends Controller
      */
     public function history(int $id)
     {
-        $this->authorize('view', User::class);
+        Gate::authorize('view', User::class);
 
         $user = $this->userService->getById($id, [
             'activities' => function($q) {
@@ -90,7 +91,7 @@ class UserController extends Controller
      */
     public function updateStanding(UpdateUserStandingRequest $request, int $id)
     {
-        $this->authorize('updateStanding', User::class);
+        Gate::authorize('updateStanding', User::class);
 
         $user = $this->userService->update($id, [
             'account_standing' => $request->validated('account_standing')
