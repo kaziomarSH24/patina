@@ -70,4 +70,56 @@ class PublicDealerController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Get Single Dealer Profile
+     *
+     * Returns the public profile of a single approved dealer along with their active listings.
+     *
+     * @urlParam id integer required The ID of the dealer.
+     */
+    public function show($id): JsonResponse
+    {
+        $dealer = User::role('dealer')
+            ->where('kyc_status', 'approved')
+            ->select('id', 'name', 'company_name', 'avatar', 'account_standing', 'average_rating', 'total_reviews', 'created_at')
+            ->with(['listings' => function ($query) {
+                // Fetch up to 10 latest active listings to show on the profile
+                $query->where('status', 'Live')
+                      ->where('is_verified', true)
+                      ->latest()
+                      ->limit(10)
+                      ->select('id', 'seller_id', 'brand', 'model', 'reference_number', 'price', 'images');
+            }])
+            ->find($id);
+
+        if (!$dealer) {
+            return response_error('Dealer not found or not approved.', [], 404);
+        }
+
+        return response_success('Dealer profile retrieved successfully', [
+            'dealer' => [
+                'id' => $dealer->id,
+                'name' => $dealer->name,
+                'company_name' => $dealer->company_name,
+                'avatar' => $dealer->avatar,
+                'joined_year' => $dealer->created_at->format('Y'),
+                'is_verified' => true,
+                'standing' => $dealer->account_standing,
+                'rating' => $dealer->average_rating,
+                'reviews_count' => $dealer->total_reviews,
+                'description' => 'A trusted dealer in the Patina network.',
+                'active_listings' => $dealer->listings->map(function ($listing) {
+                    return [
+                        'id' => $listing->id,
+                        'brand' => $listing->brand,
+                        'model' => $listing->model,
+                        'reference_number' => $listing->reference_number,
+                        'price' => $listing->price,
+                        'thumbnail' => is_array($listing->images) && count($listing->images) > 0 ? $listing->images[0] : null,
+                    ];
+                })
+            ]
+        ]);
+    }
 }

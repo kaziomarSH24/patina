@@ -90,6 +90,7 @@ Route::prefix('v1')->group(function () {
 
     // Public Dealer Directory
     Route::get('/dealers', [\App\Http\Controllers\Api\V1\PublicDealerController::class, 'index'])->name('api.v1.dealers.index');
+    Route::get('/dealers/{id}', [\App\Http\Controllers\Api\V1\PublicDealerController::class, 'show'])->name('api.v1.dealers.show');
 
     // Watch Data Proxy (For Listing Creation Dropdowns)
     Route::prefix('watch-data')->group(function () {
