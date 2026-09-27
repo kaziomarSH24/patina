@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Listing;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -27,10 +28,37 @@ class MarketService
         // Output format from API is typically array of: ["date" => "Y-m-d", "price" => 12345.67]
         $historyData = $this->watchApiService->getPriceHistory($reference);
 
+        // Try to fetch watch generic details
+        $productDetails = null;
+        try {
+            $searchResults = $this->watchApiService->searchModels($reference);
+            foreach ($searchResults as $result) {
+                if (strcasecmp($result['reference_number'] ?? '', $reference) === 0) {
+                    $productDetails = $result;
+                    break;
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore if search fails
+        }
+        
+        // Try to find an image from our own listings
+        $listing = Listing::where('reference_number', $reference)
+            ->whereNotNull('images')
+            ->latest()
+            ->first();
+            
+        $image = null;
+        if ($listing && !empty($listing->images)) {
+            $image = is_array($listing->images) ? $listing->images[0] : $listing->images;
+        }
+
         if (empty($historyData)) {
             return [
                 'reference_number' => $reference,
                 'current_market_price' => 0,
+                'image' => $image,
+                'product_details' => $productDetails,
                 'indicators' => [
                     '52w_high' => 0,
                     '52w_low' => 0,
@@ -77,9 +105,36 @@ class MarketService
         
         $momentum = $price30DaysAgo > 0 ? (($currentPrice - $price30DaysAgo) / $price30DaysAgo) * 100 : 0;
 
+        // Try to fetch watch generic details
+        $productDetails = null;
+        try {
+            $searchResults = $this->watchApiService->searchModels($reference);
+            foreach ($searchResults as $result) {
+                if (strcasecmp($result['reference_number'] ?? '', $reference) === 0) {
+                    $productDetails = $result;
+                    break;
+                }
+            }
+        } catch (\Exception $e) {
+            // Ignore if search fails
+        }
+        
+        // Try to find an image from our own listings
+        $listing = Listing::where('reference_number', $reference)
+            ->whereNotNull('images')
+            ->latest()
+            ->first();
+            
+        $image = null;
+        if ($listing && !empty($listing->images)) {
+            $image = is_array($listing->images) ? $listing->images[0] : $listing->images;
+        }
+
         return [
             'reference_number' => $reference,
             'current_market_price' => round($currentPrice, 2),
+            'image' => $image,
+            'product_details' => $productDetails,
             'indicators' => [
                 '52w_high' => round($high52W, 2),
                 '52w_low' => round($low52W, 2),
