@@ -153,6 +153,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::delete('/{id}', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'destroy'])->name('destroy');
     });
 
+    // User Purchases (History)
+    Route::get('/user/purchases', [\App\Http\Controllers\Api\V1\EscrowController::class, 'purchases'])->name('api.v1.user.purchases');
+
     // Wishlists (Favorites)
     Route::prefix('wishlists')->name('api.v1.wishlists.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\V1\WishlistController::class, 'index'])->name('index');

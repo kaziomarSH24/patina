@@ -64,6 +64,53 @@ class EscrowController extends Controller
     }
 
     /**
+     * Get User's Purchase History
+     *
+     * Returns a paginated list of all purchases (EscrowTransactions) made by the authenticated user.
+     */
+    public function purchases(Request $request)
+    {
+        $purchases = EscrowTransaction::where('buyer_id', $request->user()->id)
+            ->with(['listing' => function ($query) {
+                $query->select('id', 'brand', 'model', 'reference_number', 'images');
+            }, 'seller' => function ($query) {
+                $query->select('id', 'name', 'company_name', 'avatar');
+            }])
+            ->latest()
+            ->paginate($request->input('per_page', 10));
+
+        // Format the output
+        $formattedPurchases = $purchases->through(function ($escrow) {
+            return [
+                'id' => $escrow->id,
+                'listing_id' => $escrow->listing_id,
+                'watch_title' => $escrow->listing ? ($escrow->listing->brand . ' ' . $escrow->listing->model) : 'Unknown Watch',
+                'reference_number' => $escrow->listing ? $escrow->listing->reference_number : null,
+                'thumbnail' => ($escrow->listing && is_array($escrow->listing->images) && count($escrow->listing->images) > 0) ? $escrow->listing->images[0] : null,
+                'seller_name' => $escrow->seller ? ($escrow->seller->company_name ?: $escrow->seller->name) : 'Unknown Seller',
+                'seller_avatar' => $escrow->seller ? $escrow->seller->avatar : null,
+                'amount' => $escrow->amount,
+                'status' => $escrow->status,
+                'tracking_number' => $escrow->tracking_number,
+                'shipping_provider' => $escrow->shipping_provider,
+                'purchased_at' => $escrow->created_at->format('M d, Y'),
+            ];
+        });
+
+        return response_success('Purchase history retrieved successfully', [
+            'purchases' => [
+                'data' => $formattedPurchases,
+                'meta' => [
+                    'current_page' => $purchases->currentPage(),
+                    'last_page' => $purchases->lastPage(),
+                    'per_page' => $purchases->perPage(),
+                    'total' => $purchases->total(),
+                ]
+            ]
+        ]);
+    }
+
+    /**
      * Release Funds (Admin Action)
      * 
      * Admin triggers the Razorpay Route API to transfer funds to the seller's linked account.
