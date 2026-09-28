@@ -65,10 +65,10 @@ class UserController extends Controller
                 $q->latest()->limit(50);
             },
             'escrowTransactionsAsBuyer' => function($q) {
-                $q->latest()->limit(10);
+                $q->with('listing')->latest()->limit(10);
             },
             'escrowTransactionsAsSeller' => function($q) {
-                $q->latest()->limit(10);
+                $q->with('listing')->latest()->limit(10);
             }
         ]);
 
