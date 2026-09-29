@@ -37,6 +37,10 @@ class FollowController extends Controller
                 'follower_id' => $currentUser->id,
                 'following_id' => $targetUser->id
             ]);
+
+            // Notify the user who was followed
+            $targetUser->notify(new \App\Notifications\NewFollowerNotification($currentUser));
+
             return response()->json([
                 'message' => 'User followed successfully.',
                 'is_following' => true
