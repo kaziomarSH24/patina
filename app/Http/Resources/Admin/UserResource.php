@@ -14,12 +14,20 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $kycDisplay = match($this->kyc_status) {
+            'pending' => 'Unverified',
+            'submitted' => 'Pending Review',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            default => 'Unverified',
+        };
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone_number,
-            'kyc' => $this->kyc_status ?? 'Pending', // Verified, Pending, Failed
+            'kyc' => $kycDisplay,
             'kyc_rejection_reason' => $this->kyc_rejection_reason,
             'standing' => $this->account_standing ?? 'Good', // Good, Watchlist, Suspended
             'joined' => $this->created_at ? $this->created_at->format('M Y') : null,
