@@ -25,10 +25,13 @@ class Msg91Channel
         // MSG91 OTP API URL
         $url = "https://control.msg91.com/api/v5/otp";
         
+        // Clean the mobile number (remove +, spaces, dashes)
+        $cleanMobile = preg_replace('/[^0-9]/', '', $mobile);
+
         $response = Http::get($url, [
             "authkey" => env("MSG91_AUTH_KEY"),
             "template_id" => env("MSG91_TEMPLATE_ID"),
-            "mobile" => "91" . ltrim($mobile, "+91"),
+            "mobile" => $cleanMobile,
             "otp" => $data["otp"],
         ]);
 
