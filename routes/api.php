@@ -166,6 +166,13 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     Route::post('/reviews', [\App\Http\Controllers\Api\V1\ReviewController::class, 'store'])->name('api.v1.reviews.store');
     Route::get('/users/{user}/reviews', [\App\Http\Controllers\Api\V1\ReviewController::class, 'userReviews'])->name('api.v1.users.reviews');
 
+    // User Profile & Follow System
+    Route::prefix('users')->name('api.v1.users.')->group(function () {
+        Route::post('/{id}/follow', [\App\Http\Controllers\Api\V1\FollowController::class, 'toggleFollow'])->name('follow');
+        Route::get('/{id}/followers', [\App\Http\Controllers\Api\V1\FollowController::class, 'followers'])->name('followers');
+        Route::get('/{id}/following', [\App\Http\Controllers\Api\V1\FollowController::class, 'following'])->name('following');
+    });
+
     // Dealer/User KYC
     Route::prefix('kyc')->name('api.v1.kyc.')->group(function () {
         Route::post('/submit', [DealerKycController::class, 'submit'])->name('submit');
