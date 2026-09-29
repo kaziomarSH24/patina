@@ -22,7 +22,7 @@ class UpdateUserStandingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'account_standing' => ['required', 'string', 'in:Good,Watchlist,Suspended'],
+            'account_standing' => ['required', 'string', 'in:good,warning,suspended'],
         ];
     }
 }
