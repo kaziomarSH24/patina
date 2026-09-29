@@ -66,6 +66,9 @@ class OfferController extends Controller
 
             DB::commit();
 
+            // Notify the seller
+            $listing->seller->notify(new \App\Notifications\OfferStatusNotification($offer, 'received', $request->user()));
+
             // Broadcast to other users in chat via Reverb
             broadcast(new MessageSent($message))->toOthers();
 
@@ -132,6 +135,10 @@ class OfferController extends Controller
             ]);
 
             DB::commit();
+
+            // Notify the buyer
+            $action = strtolower($validated['status']);
+            $offer->buyer->notify(new \App\Notifications\OfferStatusNotification($offer, $action, $request->user()));
 
             broadcast(new MessageSent($replyMessage))->toOthers();
 

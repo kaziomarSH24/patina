@@ -41,9 +41,13 @@ class DealerApplicationController extends Controller
         $user = $application->user;
         if ($request->status === 'approved') {
             $user->syncRoles(['dealer']);
+            $user->notify(new \App\Notifications\DealerApplicationStatusNotification('approved'));
         } elseif (in_array($request->status, ['rejected', 'pending'])) {
             // Downgrade to customer if their application is rejected or moved back to pending
             $user->syncRoles(['customer']);
+            if ($request->status === 'rejected') {
+                $user->notify(new \App\Notifications\DealerApplicationStatusNotification('rejected'));
+            }
         }
 
         return response_success('Application status updated successfully', new DealerProfileResource($application));

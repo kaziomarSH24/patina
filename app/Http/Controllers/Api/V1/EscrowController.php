@@ -40,6 +40,11 @@ class EscrowController extends Controller
             'tracking_number' => $validated['tracking_number']
         ]);
 
+        // Notify the buyer
+        if ($escrow->buyer) {
+            $escrow->buyer->notify(new \App\Notifications\EscrowStatusNotification($escrow, 'shipped'));
+        }
+
         return response_success('Order marked as shipped.', ['escrow' => $escrow]);
     }
 
@@ -59,6 +64,11 @@ class EscrowController extends Controller
         }
 
         $escrow->update(['status' => 'Confirmed']);
+
+        // Notify the seller
+        if ($escrow->seller) {
+            $escrow->seller->notify(new \App\Notifications\EscrowStatusNotification($escrow, 'confirmed'));
+        }
 
         return response_success('Delivery confirmed successfully. Funds are ready to be released to the seller.', ['escrow' => $escrow]);
     }
@@ -165,6 +175,11 @@ class EscrowController extends Controller
             'status' => 'Completed',
             'razorpay_transfer_id' => 'sim_transfer_12345'
         ]);
+
+        // Notify the seller that funds were released
+        if ($escrow->seller) {
+            $escrow->seller->notify(new \App\Notifications\EscrowStatusNotification($escrow, 'released'));
+        }
 
         return response_success('Funds successfully released to the seller.', ['escrow' => $escrow]);
     }

@@ -181,6 +181,10 @@ class KycService extends BaseService
                 $this->storeOrUpdate(['status' => 'verified'], $doc);
             }
             $user->update(['kyc_status' => 'approved']);
+            
+            // Notify user
+            $user->notify(new \App\Notifications\KycStatusNotification('approved'));
+
             return $user;
         });
     }
@@ -193,6 +197,10 @@ class KycService extends BaseService
                 $this->storeOrUpdate(['status' => 'rejected', 'rejection_reason' => $reason], $doc);
             }
             $user->update(['kyc_status' => 'rejected']);
+            
+            // Notify user
+            $user->notify(new \App\Notifications\KycStatusNotification('rejected', $reason));
+
             return $user;
         });
     }
