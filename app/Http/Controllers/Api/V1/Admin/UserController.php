@@ -35,8 +35,11 @@ class UserController extends Controller
         Gate::authorize('viewAny', User::class);
 
         // We pass a closure to the service's getAll method to attach the counts for purchases and sales
+        // Exclude users who have the 'admin' role
         $users = $this->userService->getAll(function ($query) {
-            $query->withCount([
+            $query->whereDoesntHave('roles', function($q) {
+                $q->where('name', 'admin');
+            })->withCount([
                 'escrowTransactionsAsBuyer',
                 'escrowTransactionsAsSeller'
             ]);

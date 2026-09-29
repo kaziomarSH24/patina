@@ -35,7 +35,7 @@ class KycController extends Controller
 
         return response_success('User KYC documents retrieved successfully.', [
             'kyc_status' => $user->kyc_status,
-            'documents' => $user->kycDocuments,
+            'documents' => \App\Http\Resources\KycDocumentResource::collection($user->kycDocuments),
         ]);
     }
 
