@@ -84,8 +84,15 @@ class EscrowController extends Controller
             return response_error('Failed to generate shipping label with BlueDart.', ['bluedart_error' => $result['message']], 500);
         }
 
-        // Save PDF label
-        $pdfContent = base64_decode($result['label_base64']);
+        // Save PDF label (BlueDart APIGEE JSON returns an array of byte integers, not a base64 string)
+        $labelBytes = $result['label_base64'];
+        
+        if (is_array($labelBytes)) {
+            $pdfContent = pack('C*', ...$labelBytes);
+        } else {
+            $pdfContent = base64_decode($labelBytes);
+        }
+
         $fileName = 'labels/awb_' . $result['awb_number'] . '.pdf';
         \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $pdfContent);
         
