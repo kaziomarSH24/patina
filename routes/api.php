@@ -120,6 +120,9 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::post('/update', [ProfileController::class, 'updateProfile'])->name('update');
     });
 
+    // Addresses
+    Route::apiResource('addresses', \App\Http\Controllers\Api\V1\UserAddressController::class);
+
     // Portfolio
     Route::prefix('portfolio')->name('api.v1.portfolio.')->group(function () {
         Route::get('/holdings', [PortfolioController::class, 'holdings'])->name('holdings');

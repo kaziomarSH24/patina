@@ -6,5 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserAddress extends Model
 {
-    //
+    protected $fillable = [
+        'user_id',
+        'type',
+        'name',
+        'phone_number',
+        'address_line_1',
+        'address_line_2',
+        'city',
+        'state',
+        'pincode',
+        'is_default',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

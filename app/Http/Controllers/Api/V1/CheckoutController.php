@@ -36,10 +36,12 @@ class CheckoutController extends Controller
             return response_error('Only the buyer can initiate checkout.', [], 403);
         }
 
-        // Validate Buyer Profile (Must have address for shipping)
+        // Validate Buyer Profile (Must have default address for shipping)
         $buyer = $request->user();
-        if (empty($buyer->address) || empty($buyer->pincode) || empty($buyer->phone_number)) {
-            return response_error('Please update your address, pincode, and phone number in your profile before checking out.', [], 400);
+        $defaultAddress = $buyer->defaultAddress;
+        
+        if (!$defaultAddress || empty($defaultAddress->address_line_1) || empty($defaultAddress->pincode) || empty($defaultAddress->phone_number)) {
+            return response_error('Please add a default shipping address with pincode and phone number in your profile before checking out.', [], 400);
         }
 
         // Check offer status

@@ -44,13 +44,15 @@ class EscrowController extends Controller
         $buyer = $escrow->buyer;
 
         // Validate Buyer Details
-        if (empty($buyer->address) || empty($buyer->pincode) || empty($buyer->phone_number)) {
-            return response_error('Buyer profile is missing address, pincode, or phone number.', [], 400);
+        $buyerAddress = $buyer->defaultAddress;
+        if (!$buyerAddress || empty($buyerAddress->address_line_1) || empty($buyerAddress->pincode) || empty($buyerAddress->phone_number)) {
+            return response_error('Buyer profile is missing a default shipping address.', [], 400);
         }
 
         // Validate Seller Details
-        if (empty($seller->address) || empty($seller->pincode) || empty($seller->phone_number)) {
-            return response_error('Your profile is missing address, pincode, or phone number. Please update your profile.', [], 400);
+        $sellerAddress = $seller->defaultAddress;
+        if (!$sellerAddress || empty($sellerAddress->address_line_1) || empty($sellerAddress->pincode) || empty($sellerAddress->phone_number)) {
+            return response_error('Your profile is missing a default pickup address. Please update your address book.', [], 400);
         }
 
         $shipmentData = [
@@ -61,16 +63,16 @@ class EscrowController extends Controller
             'height_cm' => 15,
             'item_value' => $escrow->amount,
             
-            'buyer_name' => $buyer->name,
-            'buyer_address' => $buyer->address, 
-            'buyer_pincode' => $buyer->pincode,
-            'buyer_mobile' => $buyer->phone_number,
+            'buyer_name' => $buyerAddress->name ?? $buyer->name,
+            'buyer_address' => $buyerAddress->address_line_1 . ' ' . $buyerAddress->address_line_2, 
+            'buyer_pincode' => $buyerAddress->pincode,
+            'buyer_mobile' => $buyerAddress->phone_number,
             'buyer_email' => $buyer->email,
             
-            'seller_name' => $seller->name,
-            'seller_address' => $seller->address,
-            'seller_pincode' => $seller->pincode,
-            'seller_mobile' => $seller->phone_number,
+            'seller_name' => $sellerAddress->name ?? $seller->name,
+            'seller_address' => $sellerAddress->address_line_1 . ' ' . $sellerAddress->address_line_2,
+            'seller_pincode' => $sellerAddress->pincode,
+            'seller_mobile' => $sellerAddress->phone_number,
             'seller_email' => $seller->email,
             
             'sub_product_code' => 'W', // Watch
