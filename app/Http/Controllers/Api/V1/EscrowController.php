@@ -75,7 +75,7 @@ class EscrowController extends Controller
             'seller_mobile' => $sellerAddress->phone_number,
             'seller_email' => $seller->email,
             
-            'sub_product_code' => 'W', // Watch
+            'sub_product_code' => '', // Empty string for sandbox compatibility
         ];
 
         $result = $this->blueDartService->generateAWB($shipmentData);
