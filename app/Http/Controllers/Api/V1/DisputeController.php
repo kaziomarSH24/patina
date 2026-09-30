@@ -4,34 +4,26 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\EscrowTransaction;
-use App\Models\Dispute;
+use App\Services\DisputeService;
+use App\Http\Resources\DisputeResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class DisputeController extends Controller
 {
+    protected $disputeService;
+
+    public function __construct(DisputeService $disputeService)
+    {
+        $this->disputeService = $disputeService;
+    }
+
     /**
      * Raise a new dispute for an escrow transaction.
      */
     public function raiseDispute(Request $request, EscrowTransaction $escrow)
     {
-        $user = auth()->user();
-
-        // Ensure user is part of the transaction
-        if ($escrow->buyer_id !== $user->id && $escrow->seller_id !== $user->id) {
-            return response_error("Unauthorized access to this transaction.", [], 403);
-        }
-
-        // Check if status allows dispute (Usually Paid, Shipped, or Delivered)
-        if (!in_array($escrow->status, ["Paid", "Shipped", "Delivered"])) {
-            return response_error("Cannot raise a dispute for an escrow in \"{$escrow->status}\" status.", [], 400);
-        }
-
-        // Check if a dispute already exists
-        if (Dispute::where("escrow_transaction_id", $escrow->id)->exists()) {
-            return response_error("A dispute has already been raised for this transaction.", [], 400);
-        }
-
         $validator = Validator::make($request->all(), [
             "reason"        => "required|string|max:255",
             "buyer_claim"   => "required|string",
@@ -43,20 +35,17 @@ class DisputeController extends Controller
             return response_error("Validation failed", $validator->errors()->toArray(), 422);
         }
 
-        // Create the dispute
-        $dispute = Dispute::create([
-            "escrow_transaction_id" => $escrow->id,
-            "raised_by_user_id"     => $user->id,
-            "reason"                => $request->reason,
-            "buyer_claim"           => $request->buyer_claim,
-            "evidence_urls"         => $request->evidence_urls ?? [],
-            "status"                => "Open",
-        ]);
-
-        // Freeze the funds by updating escrow status
-        $escrow->update(["status" => "Disputed"]);
-
-        return response_success("Dispute raised successfully. Funds have been frozen and admin has been notified.", $dispute);
+        try {
+            $dispute = $this->disputeService->raiseDispute($escrow, $validator->validated(), auth()->id());
+            
+            return response_success(
+                "Dispute raised successfully. Funds have been frozen and admin has been notified.", 
+                new DisputeResource($dispute->load(["escrowTransaction.buyer", "escrowTransaction.seller"]))
+            );
+        } catch (Exception $e) {
+            $code = $e->getCode() ?: 400;
+            return response_error($e->getMessage(), [], $code);
+        }
     }
 
     /**
@@ -64,36 +53,25 @@ class DisputeController extends Controller
      */
     public function replyDispute(Request $request, EscrowTransaction $escrow)
     {
-        $user = auth()->user();
-
-        // Ensure user is the seller
-        if ($escrow->seller_id !== $user->id) {
-            return response_error("Only the seller can reply to this dispute.", [], 403);
-        }
-
-        $dispute = Dispute::where('escrow_transaction_id', $escrow->id)->first();
-
-        if (!$dispute) {
-            return response_error("No dispute found for this transaction.", [], 404);
-        }
-
-        if ($dispute->status !== 'Open') {
-            return response_error("This dispute is already resolved.", [], 400);
-        }
-
         $validator = Validator::make($request->all(), [
-            'seller_response' => 'required|string',
+            "seller_response" => "required|string",
         ]);
 
         if ($validator->fails()) {
             return response_error("Validation failed", $validator->errors()->toArray(), 422);
         }
 
-        $dispute->update([
-            'seller_response' => $request->seller_response
-        ]);
+        try {
+            $dispute = $this->disputeService->replyToDispute($escrow, $validator->validated(), auth()->id());
 
-        return response_success("Your response has been submitted successfully.", $dispute);
+            return response_success(
+                "Your response has been submitted successfully.", 
+                new DisputeResource($dispute->load(["escrowTransaction.buyer", "escrowTransaction.seller"]))
+            );
+        } catch (Exception $e) {
+            $code = $e->getCode() ?: 400;
+            return response_error($e->getMessage(), [], $code);
+        }
     }
 }
 

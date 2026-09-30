@@ -4,11 +4,21 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispute;
+use App\Services\DisputeService;
+use App\Http\Resources\DisputeResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Exception;
 
 class AdminDisputeController extends Controller
 {
+    protected $disputeService;
+
+    public function __construct(DisputeService $disputeService)
+    {
+        $this->disputeService = $disputeService;
+    }
+
     /**
      * List all disputes for admin dashboard.
      */
@@ -19,7 +29,7 @@ class AdminDisputeController extends Controller
         $query = Dispute::with([
             "escrowTransaction.buyer",
             "escrowTransaction.seller",
-            "escrowTransaction.listing.watch", // assuming relationships
+            "escrowTransaction.listing.watch", 
             "raisedBy"
         ])->latest();
 
@@ -29,7 +39,10 @@ class AdminDisputeController extends Controller
 
         $disputes = $query->paginate(20);
 
-        return response_success("Disputes retrieved successfully.", $disputes);
+        return response_success(
+            "Disputes retrieved successfully.", 
+            DisputeResource::collection($disputes)->response()->getData(true)
+        );
     }
 
     /**
@@ -43,10 +56,6 @@ class AdminDisputeController extends Controller
             return response_error("Dispute not found.", [], 404);
         }
 
-        if ($dispute->status !== "Open") {
-            return response_error("This dispute has already been resolved.", [], 400);
-        }
-
         $validator = Validator::make($request->all(), [
             "resolution"  => "required|in:seller,buyer",
             "admin_notes" => "nullable|string"
@@ -56,33 +65,21 @@ class AdminDisputeController extends Controller
             return response_error("Validation failed", $validator->errors()->toArray(), 422);
         }
 
-        $resolution = $request->resolution;
-        $escrow = $dispute->escrowTransaction;
+        try {
+            $resolvedDispute = $this->disputeService->resolveDispute($dispute, $validator->validated());
 
-        // Save admin notes and update status
-        $dispute->admin_notes = $request->admin_notes;
+            $message = $request->resolution === "seller" 
+                ? "Dispute resolved in favor of seller. Funds marked for release." 
+                : "Dispute resolved in favor of buyer. Funds marked for refund.";
 
-        if ($resolution === "seller") {
-            // Release funds to seller
-            $dispute->status = "Resolved_Seller";
-            $escrow->update(["status" => "Completed"]); // or wait for payout API
-            
-            // TODO: Call Razorpay Route Transfer API here
-            
-            $message = "Dispute resolved in favor of seller. Funds marked for release.";
-        } else {
-            // Refund buyer
-            $dispute->status = "Resolved_Buyer";
-            $escrow->update(["status" => "Refunded"]);
-            
-            // TODO: Call Razorpay Refund API here
-
-            $message = "Dispute resolved in favor of buyer. Funds marked for refund.";
+            return response_success(
+                $message, 
+                new DisputeResource($resolvedDispute->load(["escrowTransaction.buyer", "escrowTransaction.seller"]))
+            );
+        } catch (Exception $e) {
+            $code = $e->getCode() ?: 400;
+            return response_error($e->getMessage(), [], $code);
         }
-
-        $dispute->save();
-
-        return response_success($message, $dispute);
     }
 }
 
