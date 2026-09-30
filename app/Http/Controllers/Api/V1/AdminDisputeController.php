@@ -29,7 +29,7 @@ class AdminDisputeController extends Controller
         $query = Dispute::with([
             "escrowTransaction.buyer",
             "escrowTransaction.seller",
-            "escrowTransaction.listing.watch", 
+            "escrowTransaction.listing", 
             "raisedBy"
         ])->latest();
 

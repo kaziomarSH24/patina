@@ -17,11 +17,13 @@ class DisputeResource extends JsonResource
         $escrow = $this->whenLoaded("escrowTransaction");
         $buyer = $escrow ? $escrow->buyer : null;
         $seller = $escrow ? $escrow->seller : null;
+        $listing = $escrow ? $escrow->listing : null;
 
         return [
             "id" => $this->id,
             "dispute_reference" => "DSP-" . str_pad($this->id, 3, "0", STR_PAD_LEFT),
             "escrow_reference" => $escrow ? "ESC-" . str_pad($escrow->id, 4, "0", STR_PAD_LEFT) : null,
+            "watch_name" => $listing ? ($listing->brand . " " . $listing->model) : "Unknown Watch",
             "status" => $this->status,
             "reason" => $this->reason,
             "amount" => $escrow ? $escrow->amount : null,
