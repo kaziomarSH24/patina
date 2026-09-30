@@ -207,6 +207,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/{escrow}/tracking', [EscrowController::class, 'tracking'])->name('tracking');
         Route::post('/{escrow}/ship', [EscrowController::class, 'ship'])->name('ship');
         Route::post('/{escrow}/confirm', [EscrowController::class, 'confirm'])->name('confirm');
+        Route::post('/{escrow}/dispute', [\App\Http\Controllers\Api\V1\DisputeController::class, 'raiseDispute'])->name('dispute');
     });
 
     // Logistics
