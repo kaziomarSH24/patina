@@ -24,12 +24,12 @@ class LogisticsController extends Controller
             return response_error('Invalid pincode provided. Must be 6 digits.', [], 400);
         }
 
-        $result = $this->blueDartService->checkServiceability($pincode);
+        $isDeliverable = $this->blueDartService->checkServiceability($pincode);
 
-        if ($result['success']) {
-            return response_success('Service available at this pincode.', $result);
+        if ($isDeliverable) {
+            return response_success('Service available at this pincode.');
         }
 
-        return response_error('Delivery service not available at this pincode.', $result, 400);
+        return response_error('Delivery service not available at this pincode.', [], 400);
     }
 }
