@@ -262,7 +262,7 @@ class BlueDartService
                         'ConsigneeGSTNumber'  => '',
                         'ConsigneeMobile'     => $shipmentData['buyer_mobile'] ?? '',
                         'ConsigneeName'       => substr($shipmentData['buyer_name'] ?? '', 0, 30),
-                        'ConsigneePincode'    => $shipmentData['buyer_pincode'] ?? '',
+                        'ConsigneePincode'    => substr(trim($shipmentData['buyer_pincode'] ?? ''), 0, 6),
                         'ConsigneeTelephone'  => '',
                     ],
                     'Returnadds' => [
@@ -271,10 +271,10 @@ class BlueDartService
                         'ReturnAddress2'  => '',
                         'ReturnAddress3'  => '',
                         'ReturnAddressType' => 'R',
-                        'ReturnContact'   => $shipmentData['seller_name'] ?? '',
+                        'ReturnContact'   => substr($shipmentData['seller_name'] ?? '', 0, 30),
                         'ReturnEmailID'   => $shipmentData['seller_email'] ?? '',
                         'ReturnMobile'    => $shipmentData['seller_mobile'] ?? '',
-                        'ReturnPincode'   => $shipmentData['seller_pincode'] ?? $this->originArea,
+                        'ReturnPincode'   => substr(trim($shipmentData['seller_pincode'] ?? $this->originArea), 0, 6),
                         'ReturnTelephone' => '',
                     ],
                     'Services' => [
@@ -288,7 +288,14 @@ class BlueDartService
                         'CreditReferenceNo'  => $shipmentData['reference_no'] ?? ('PAT-' . time()),
                         'DeclaredValue'      => (string)($shipmentData['declared_value'] ?? '1000'),
                         'DeliveryTimeSlot'   => '',
-                        'Dimensions'         => null,
+                        'Dimensions'         => [
+                            [
+                                'Breadth' => 10,
+                                'Count'   => 1,
+                                'Height'  => 10,
+                                'Length'  => 15,
+                            ]
+                        ],
                         'FavouritePODType'   => '',
                         'InsuredAmount'      => '',
                         'InvoiceNo'          => '',
@@ -323,7 +330,7 @@ class BlueDartService
                         'CustomerGSTNumber' => '',
                         'CustomerMobile'    => $shipmentData['seller_mobile'] ?? '',
                         'CustomerName'      => substr($shipmentData['seller_name'] ?? '', 0, 30),
-                        'CustomerPincode'   => $shipmentData['seller_pincode'] ?? '',
+                        'CustomerPincode'   => substr(trim($shipmentData['seller_pincode'] ?? ''), 0, 6),
                         'CustomerTelephone' => '',
                         'IsToPayCustomer'   => false,
                         'OriginArea'        => $this->originArea,
@@ -335,7 +342,6 @@ class BlueDartService
                     'Api_type'          => 'S',
                     'Area'              => '',
                     'IsCreditTypeUser'  => true,
-                    'PrintType'         => null,
                     'RegisterPickup'    => false,
                     'Version'           => '1.3'
                 ])
@@ -347,9 +353,17 @@ class BlueDartService
             );
 
             if ($response->status() === 400) {
-                $errors  = $response->json('error-response');
-                $message = $errors[0]['ErrorMessage'] ?? 'Waybill generation failed';
-                Log::error("BlueDart Waybill 400: $message");
+                $errors = $response->json('error-response');
+                
+                $message = 'Waybill generation failed';
+                
+                if (isset($errors[0]['Status'][0]['StatusInformation'])) {
+                    $message = $errors[0]['Status'][0]['StatusInformation'];
+                } elseif (isset($errors[0]['ErrorMessage'])) {
+                    $message = $errors[0]['ErrorMessage'];
+                }
+
+                Log::error("BlueDart Waybill 400: " . $message . " | Raw: " . $response->body());
                 return ['success' => false, 'message' => $message];
             }
 
