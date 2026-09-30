@@ -43,6 +43,16 @@ class EscrowController extends Controller
         $seller = $escrow->seller;
         $buyer = $escrow->buyer;
 
+        // Validate Buyer Details
+        if (empty($buyer->address) || empty($buyer->pincode) || empty($buyer->phone_number)) {
+            return response_error('Buyer profile is missing address, pincode, or phone number.', [], 400);
+        }
+
+        // Validate Seller Details
+        if (empty($seller->address) || empty($seller->pincode) || empty($seller->phone_number)) {
+            return response_error('Your profile is missing address, pincode, or phone number. Please update your profile.', [], 400);
+        }
+
         $shipmentData = [
             'order_no' => 'ESCROW-' . $escrow->id,
             'weight_kg' => 1.0, // Default weight for a watch
@@ -52,15 +62,15 @@ class EscrowController extends Controller
             'item_value' => $escrow->amount,
             
             'buyer_name' => $buyer->name,
-            'buyer_address' => $buyer->address ?? 'Dummy Buyer Address', 
-            'buyer_pincode' => $buyer->pincode ?? '110001',
-            'buyer_mobile' => $buyer->phone_number ?? '9999999999',
+            'buyer_address' => $buyer->address, 
+            'buyer_pincode' => $buyer->pincode,
+            'buyer_mobile' => $buyer->phone_number,
             'buyer_email' => $buyer->email,
             
             'seller_name' => $seller->name,
-            'seller_address' => $seller->address ?? 'Dummy Seller Address',
-            'seller_pincode' => $seller->pincode ?? '110001',
-            'seller_mobile' => $seller->phone_number ?? '9999999999',
+            'seller_address' => $seller->address,
+            'seller_pincode' => $seller->pincode,
+            'seller_mobile' => $seller->phone_number,
             'seller_email' => $seller->email,
             
             'sub_product_code' => 'W', // Watch
