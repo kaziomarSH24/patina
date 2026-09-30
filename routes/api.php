@@ -200,8 +200,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     });
 
     Route::prefix('escrow')->name('api.v1.escrow.')->group(function () {
+        Route::post('/{escrow}/generate-label', [EscrowController::class, 'generateLabel'])->name('generate-label');
+        Route::get('/{escrow}/tracking', [EscrowController::class, 'tracking'])->name('tracking');
         Route::post('/{escrow}/ship', [EscrowController::class, 'ship'])->name('ship');
         Route::post('/{escrow}/confirm', [EscrowController::class, 'confirm'])->name('confirm');
+    });
+
+    // Logistics
+    Route::prefix('logistics')->name('api.v1.logistics.')->group(function () {
+        Route::get('/pincode/{pincode}', [\App\Http\Controllers\Api\V1\LogisticsController::class, 'checkPincode'])->name('checkPincode');
     });
 
     // Admin Routes (auth + role:admin)

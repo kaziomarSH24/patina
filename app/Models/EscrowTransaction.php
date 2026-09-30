@@ -19,6 +19,7 @@ class EscrowTransaction extends Model
         'status',
         'shipping_provider',
         'tracking_number',
+        'shipping_label_url',
         'razorpay_order_id',
         'razorpay_payment_id',
         'razorpay_transfer_id',

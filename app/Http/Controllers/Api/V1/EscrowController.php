@@ -14,6 +14,112 @@ use Illuminate\Support\Facades\Log;
  */
 class EscrowController extends Controller
 {
+    protected \App\Services\BlueDartService $blueDartService;
+
+    public function __construct(\App\Services\BlueDartService $blueDartService)
+    {
+        $this->blueDartService = $blueDartService;
+    }
+
+    /**
+     * Generate Shipping Label via BlueDart
+     */
+    public function generateLabel(Request $request, EscrowTransaction $escrow)
+    {
+        if ($escrow->seller_id !== $request->user()->id) {
+            return response_error('Only the seller can generate a shipping label.', [], 403);
+        }
+
+        if ($escrow->status !== 'Payment Received') {
+            return response_error("Order is currently '{$escrow->status}'. Payment must be received to generate a label.", [], 400);
+        }
+
+        // Check if label already generated
+        if ($escrow->tracking_number) {
+            return response_error("Shipping label already generated for this order.", ['awb' => $escrow->tracking_number, 'label_url' => $escrow->shipping_label_url], 400);
+        }
+
+        // Prepare Shipment Data
+        $seller = $escrow->seller;
+        $buyer = $escrow->buyer;
+
+        $shipmentData = [
+            'order_no' => 'ESCROW-' . $escrow->id,
+            'weight_kg' => 1.0, // Default weight for a watch
+            'length_cm' => 15,
+            'width_cm'  => 15,
+            'height_cm' => 15,
+            'item_value' => $escrow->amount,
+            
+            'buyer_name' => $buyer->name,
+            'buyer_address' => $buyer->address ?? 'Dummy Buyer Address', 
+            'buyer_pincode' => $buyer->pincode ?? '110001',
+            'buyer_mobile' => $buyer->phone_number ?? '9999999999',
+            'buyer_email' => $buyer->email,
+            
+            'seller_name' => $seller->name,
+            'seller_address' => $seller->address ?? 'Dummy Seller Address',
+            'seller_pincode' => $seller->pincode ?? '110001',
+            'seller_mobile' => $seller->phone_number ?? '9999999999',
+            'seller_email' => $seller->email,
+            
+            'sub_product_code' => 'W', // Watch
+        ];
+
+        $result = $this->blueDartService->generateAWB($shipmentData);
+
+        if (!$result['success']) {
+            return response_error('Failed to generate shipping label with BlueDart.', ['bluedart_error' => $result['message']], 500);
+        }
+
+        // Save PDF label
+        $pdfContent = base64_decode($result['label_base64']);
+        $fileName = 'labels/awb_' . $result['awb_number'] . '.pdf';
+        \Illuminate\Support\Facades\Storage::disk('public')->put($fileName, $pdfContent);
+        
+        $labelUrl = asset('storage/' . $fileName);
+
+        $escrow->update([
+            'status' => 'Shipped',
+            'shipping_provider' => 'BlueDart',
+            'tracking_number' => $result['awb_number'],
+            'shipping_label_url' => $labelUrl
+        ]);
+
+        // Notify the buyer
+        if ($escrow->buyer) {
+            $escrow->buyer->notify(new \App\Notifications\EscrowStatusNotification($escrow, 'shipped'));
+        }
+
+        return response_success('Shipping label generated and order marked as shipped.', [
+            'awb' => $result['awb_number'],
+            'label_url' => $labelUrl,
+            'escrow' => $escrow
+        ]);
+    }
+
+    /**
+     * Get Live Tracking Details
+     */
+    public function tracking(Request $request, EscrowTransaction $escrow)
+    {
+        if ($escrow->seller_id !== $request->user()->id && $escrow->buyer_id !== $request->user()->id) {
+            return response_error('Unauthorized to view this tracking.', [], 403);
+        }
+
+        if (!$escrow->tracking_number || $escrow->shipping_provider !== 'BlueDart') {
+            return response_error('No BlueDart tracking available for this order.', [], 400);
+        }
+
+        $result = $this->blueDartService->trackShipment($escrow->tracking_number);
+
+        if (!$result['success']) {
+            return response_error('Tracking information currently unavailable.', [], 400);
+        }
+
+        return response_success('Tracking information retrieved successfully.', $result['data']);
+    }
+
     /**
      * Mark as Shipped (Seller Action)
      * 
