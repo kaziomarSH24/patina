@@ -179,13 +179,18 @@ class BlueDartService
             }
 
             if ($response->successful()) {
-                $data    = $response->json();
-                $isError = $data['IsError'] ?? $data['error-response'][0]['IsError'] ?? true;
+                $data = $response->json();
+                
+                // BlueDart wraps the response in GetServicesforPincodeResult
+                if (isset($data['GetServicesforPincodeResult'])) {
+                    $resultData = $data['GetServicesforPincodeResult'];
+                    $isError = $resultData['IsError'] ?? true;
 
-                if (!$isError) {
-                    // Check if outbound delivery is available
-                    $outbound = $data['DomesticPriorityOutbound'] ?? $data['GroundOutbound'] ?? 'N';
-                    return $outbound === 'Y';
+                    if (!$isError) {
+                        // Check if outbound delivery is available
+                        $outbound = $resultData['DomesticPriorityOutbound'] ?? $resultData['GroundOutbound'] ?? 'No';
+                        return strtolower($outbound) === 'yes';
+                    }
                 }
             }
 
@@ -347,6 +352,10 @@ class BlueDartService
 
             if ($response->successful()) {
                 $data = $response->json();
+                
+                if (isset($data['GenerateWayBillResult'])) {
+                    $data = $data['GenerateWayBillResult'];
+                }
 
                 $isError = $data['IsError'] ?? true;
                 $awbNo   = $data['AWBNo'] ?? null;
@@ -408,7 +417,12 @@ class BlueDartService
             );
 
             if ($response->successful()) {
-                $data    = $response->json();
+                $data = $response->json();
+                
+                if (isset($data['GetShipmentDetailsResult'])) {
+                    $data = $data['GetShipmentDetailsResult'];
+                }
+                
                 $isError = $data['IsError'] ?? true;
 
                 if (!$isError) {
