@@ -306,6 +306,7 @@ class BlueDartService
                         ],
                         'PieceCount'         => '1',
                         'PickupDate'         => '/Date(' . (time() * 1000) . '+0530)/',
+                        'PickupTime'         => '1600',
                         'ProductCode'        => $shipmentData['product_code'] ?? 'A', // A=Air, D=Surface
                         'ProductType'        => 2,
                         'SpecialInstruction' => '',
@@ -328,14 +329,16 @@ class BlueDartService
                         'OriginArea'        => $this->originArea,
                         'Sender'            => substr($shipmentData['seller_name'] ?? '', 0, 20),
                         'VendorCode'        => '',
-                    ],
-                    'Profile' => array_merge($this->getProfile(), [
-                        'Area'              => '',
-                        'IsCreditTypeUser'  => true,
-                        'PrintType'         => null,
-                        'RegisterPickup'    => false,
-                    ]),
-                ]
+                    ]
+                ],
+                'Profile' => array_merge($this->getProfile(), [
+                    'Api_type'          => 'S',
+                    'Area'              => '',
+                    'IsCreditTypeUser'  => true,
+                    'PrintType'         => null,
+                    'RegisterPickup'    => false,
+                    'Version'           => '1.3'
+                ])
             ];
 
             $response = $this->client()->post(
