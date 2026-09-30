@@ -36,6 +36,12 @@ class CheckoutController extends Controller
             return response_error('Only the buyer can initiate checkout.', [], 403);
         }
 
+        // Validate Buyer Profile (Must have address for shipping)
+        $buyer = $request->user();
+        if (empty($buyer->address) || empty($buyer->pincode) || empty($buyer->phone_number)) {
+            return response_error('Please update your address, pincode, and phone number in your profile before checking out.', [], 400);
+        }
+
         // Check offer status
         if ($offer->status !== 'Accepted') {
             return response_error('Checkout can only be initiated for accepted offers.', [], 400);
