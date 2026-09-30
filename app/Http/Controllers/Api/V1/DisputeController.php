@@ -58,5 +58,42 @@ class DisputeController extends Controller
 
         return response_success("Dispute raised successfully. Funds have been frozen and admin has been notified.", $dispute);
     }
+
+    /**
+     * Seller replies to the dispute.
+     */
+    public function replyDispute(Request $request, EscrowTransaction $escrow)
+    {
+        $user = auth()->user();
+
+        // Ensure user is the seller
+        if ($escrow->seller_id !== $user->id) {
+            return response_error("Only the seller can reply to this dispute.", [], 403);
+        }
+
+        $dispute = Dispute::where('escrow_transaction_id', $escrow->id)->first();
+
+        if (!$dispute) {
+            return response_error("No dispute found for this transaction.", [], 404);
+        }
+
+        if ($dispute->status !== 'Open') {
+            return response_error("This dispute is already resolved.", [], 400);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'seller_response' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response_error("Validation failed", $validator->errors()->toArray(), 422);
+        }
+
+        $dispute->update([
+            'seller_response' => $request->seller_response
+        ]);
+
+        return response_success("Your response has been submitted successfully.", $dispute);
+    }
 }
 

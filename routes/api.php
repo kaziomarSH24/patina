@@ -208,6 +208,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::post('/{escrow}/ship', [EscrowController::class, 'ship'])->name('ship');
         Route::post('/{escrow}/confirm', [EscrowController::class, 'confirm'])->name('confirm');
         Route::post('/{escrow}/dispute', [\App\Http\Controllers\Api\V1\DisputeController::class, 'raiseDispute'])->name('dispute');
+        Route::post('/{escrow}/dispute/reply', [\App\Http\Controllers\Api\V1\DisputeController::class, 'replyDispute'])->name('dispute.reply');
     });
 
     // Logistics
@@ -233,6 +234,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
 
         // Admin Escrow Management
         Route::post('/escrow/{escrow}/release', [EscrowController::class, 'release'])->name('escrow.release');
+
+        // Admin Disputes
+        Route::prefix('disputes')->name('disputes.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'index'])->name('index');
+            Route::post('/{id}/resolve', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'resolve'])->name('resolve');
+        });
 
         // Admin Dealer Applications
         Route::prefix('dealer-applications')->name('dealer-applications.')->group(function () {
