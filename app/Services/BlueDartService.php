@@ -137,7 +137,7 @@ class BlueDartService
             'JWTToken'     => $token,
             'Content-Type' => 'application/json',
             'Accept'       => 'application/json',
-        ]);
+        ])->timeout(60);
     }
 
     // ================================================================
