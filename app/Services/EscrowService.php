@@ -53,4 +53,30 @@ class EscrowService extends BaseService
         // Use the ManagesData trait method 'storeOrUpdate' inherited from BaseService
         return $this->storeOrUpdate($data, $transaction);
     }
+
+    /**
+     * Refund an escrow transaction
+     */
+    public function refundEscrow(EscrowTransaction $escrow): EscrowTransaction
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($escrow) {
+            // TODO: Call Razorpay API to process refund
+            
+            $escrow->update(['status' => 'Refunded']);
+            return $escrow;
+        });
+    }
+
+    /**
+     * Release funds to seller
+     */
+    public function releaseEscrow(EscrowTransaction $escrow): EscrowTransaction
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($escrow) {
+            // TODO: Call Razorpay Route Transfer API
+            
+            $escrow->update(['status' => 'Completed']);
+            return $escrow;
+        });
+    }
 }

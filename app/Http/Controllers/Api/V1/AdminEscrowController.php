@@ -66,9 +66,8 @@ class AdminEscrowController extends Controller
         }
 
         // Real logic for Razorpay Refund will go here
-        // TODO: Call Razorpay API to process refund using $escrow->razorpay_payment_id
-        
-        $escrow->update(["status" => "Refunded"]);
+        $escrowService = app(\App\Services\EscrowService::class);
+        $escrow = $escrowService->refundEscrow($escrow);
 
         return response_success("Escrow refunded successfully. Funds have been returned to the buyer.", new AdminEscrowResource($escrow->load(["buyer", "seller", "listing"])));
     }
@@ -95,9 +94,8 @@ class AdminEscrowController extends Controller
         }
 
         // Real logic for Razorpay Route Transfer will go here
-        // TODO: Call Razorpay Route Transfer API
-
-        $escrow->update(["status" => "Completed"]);
+        $escrowService = app(\App\Services\EscrowService::class);
+        $escrow = $escrowService->releaseEscrow($escrow);
 
         return response_success("Funds successfully released to the seller.", new AdminEscrowResource($escrow->load(["buyer", "seller", "listing"])));
     }
