@@ -233,7 +233,13 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::apiResource('subscription-plans', AdminSubscriptionPlanController::class);
 
         // Admin Escrow Management
-        Route::post('/escrow/{escrow}/release', [EscrowController::class, 'release'])->name('escrow.release');
+        Route::prefix('escrows')->name('escrows.')->group(function () {
+            Route::get('/stats', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'stats'])->name('stats');
+            Route::get('/', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'index'])->name('index');
+            Route::get('/{id}/tracking', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'tracking'])->name('tracking');
+            Route::post('/{id}/release', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'release'])->name('release');
+            Route::post('/{id}/refund', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'refund'])->name('refund');
+        });
 
         // Admin Disputes
         Route::prefix('disputes')->name('disputes.')->group(function () {
