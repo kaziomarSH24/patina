@@ -423,30 +423,38 @@ class BlueDartService
     public function trackShipment(string $awbNumber): array
     {
         if (str_contains($this->apiUrl, 'sandbox') || app()->environment('local')) {
-            // Return dummy tracking data for UI testing in sandbox
-            return [
-                "success" => true,
-                "data" => [
-                    "AWBNo" => $awbNumber,
-                    "Status" => "IN TRANSIT",
-                    "StatusDate" => now()->format("d-M-Y"),
-                    "StatusTime" => now()->format("H:i"),
-                    "Destination" => "MUMBAI",
-                    "Scans" => [
+            // Return dummy tracking data matching EXACTLY what the real parser returns
+            $shipmentData = [
+                "AWBNo" => $awbNumber,
+                "Status" => "IN TRANSIT",
+                "StatusDate" => now()->format("d-M-Y"),
+                "StatusTime" => now()->format("H:i"),
+                "Destination" => "MUMBAI",
+                "Delivered" => "N",
+                "Scans" => [
+                    "ScanDetail" => [
                         [
                             "Scan" => "Shipment Picked Up",
-                            "Location" => "DELHI",
-                            "Date" => now()->subDays(1)->format("d-M-Y"),
-                            "Time" => "10:30"
+                            "ScanLocation" => "DELHI",
+                            "ScanDate" => now()->subDays(1)->format("d-M-Y"),
+                            "ScanTime" => "10:30"
                         ],
                         [
                             "Scan" => "In Transit to Destination",
-                            "Location" => "MUMBAI HUB",
-                            "Date" => now()->format("d-M-Y"),
-                            "Time" => now()->subHours(2)->format("H:i")
+                            "ScanLocation" => "MUMBAI HUB",
+                            "ScanDate" => now()->format("d-M-Y"),
+                            "ScanTime" => now()->subHours(2)->format("H:i")
                         ]
                     ]
                 ]
+            ];
+
+            return [
+                "success"   => true,
+                "awb"       => $awbNumber,
+                "status"    => "IN TRANSIT",
+                "delivered" => false,
+                "data"      => $shipmentData
             ];
         }
 

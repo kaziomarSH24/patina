@@ -114,11 +114,11 @@ class AdminEscrowController extends Controller
         $blueDartService = app(\App\Services\BlueDartService::class);
         $result = $blueDartService->trackShipment($escrow->tracking_number);
 
-        if (!$result || !$result["success"]) {
+        if (!$result || !($result["success"] ?? false)) {
             return response_error("Tracking information currently unavailable from BlueDart.", [], 400);
         }
 
-        return response_success("Tracking information synced successfully.", $result["data"]);
+        return response_success("Tracking information synced successfully.", $result);
     }
 }
 
