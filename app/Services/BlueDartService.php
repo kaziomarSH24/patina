@@ -422,7 +422,7 @@ class BlueDartService
     // ================================================================
     public function trackShipment(string $awbNumber): array
     {
-        if ($this->isSandbox) {
+        if (str_contains($this->apiUrl, 'sandbox') || app()->environment('local')) {
             // Return dummy tracking data for UI testing in sandbox
             return [
                 "success" => true,
