@@ -83,8 +83,8 @@ class AdminEscrowController extends Controller
             return response_error("Escrow transaction not found.", [], 404);
         }
 
-        if ($escrow->status !== "Delivered" && $escrow->status !== "Disputed") {
-            return response_error("Only Delivered or Disputed escrows can be released.", [], 400);
+        if ($escrow->status !== "Confirmed" && $escrow->status !== "Disputed") {
+            return response_error("Only Confirmed or Disputed escrows can be released.", [], 400);
         }
 
         // Prevent fake success if Razorpay Route is not fully configured
