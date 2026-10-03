@@ -134,20 +134,25 @@ class WatchApiService
     /**
      * Get list of reference numbers for a specific brand (Cached for 7 days)
      */
-    public function getReferences(string $brand): array
+    public function getReferences(string $brand, ?string $model = null): array
     {
+        // We only use brand for the API call since it doesn't support model filtering properly
         $cacheKey = 'watch_api_reference_list_' . md5(strtolower(trim($brand)));
         
-        return Cache::remember($cacheKey, 604800, function () use ($brand) {
-            $response = Http::get("{$this->baseUrl}/reference/list", [
+        $references = Cache::remember($cacheKey, 604800, function () use ($brand) {
+            $params = [
                 'api_token' => $this->token,
                 'brand' => $brand,
-            ]);
+            ];
+            
+            $response = Http::get("{$this->baseUrl}/reference/list", $params);
 
             if ($response->successful()) {
                 return $response->json()['data'] ?? [];
             }
             throw new \Exception($response->json()['error']['message'] ?? 'Failed to fetch references');
         });
+
+        return $references;
     }
 }

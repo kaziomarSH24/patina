@@ -23,7 +23,7 @@ class SubmitKycRequest extends BaseRequest
             // Files
             'front_side' => 'required|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'back_side' => 'required_if:document_type,aadhaar|file|mimes:jpeg,png,jpg,pdf|max:5120',
-            'selfie' => 'required|file|mimes:jpeg,png,jpg|max:5120',
+            'selfie' => 'nullable|file|mimes:jpeg,png,jpg|max:5120',
         ];
     }
 }

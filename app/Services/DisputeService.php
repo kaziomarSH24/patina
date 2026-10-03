@@ -95,6 +95,17 @@ class DisputeService
 
             $dispute->save();
 
+            // Send notifications to buyer and seller
+            $buyer = $escrow->buyer;
+            $seller = $escrow->seller;
+            
+            if ($buyer) {
+                $buyer->notify(new \App\Notifications\DisputeResolvedNotification($dispute, $resolution));
+            }
+            if ($seller) {
+                $seller->notify(new \App\Notifications\DisputeResolvedNotification($dispute, $resolution));
+            }
+
             return $dispute;
         });
     }

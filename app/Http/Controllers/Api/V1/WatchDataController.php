@@ -54,13 +54,14 @@ class WatchDataController extends Controller
     public function references(Request $request): JsonResponse
     {
         $brand = $request->query('brand');
+        $model = $request->query('model');
         
         if (empty($brand)) {
             return response_error('Brand parameter is required', [], 400);
         }
 
         try {
-            $references = $this->watchApiService->getReferences($brand);
+            $references = $this->watchApiService->getReferences($brand, $model);
             return response_success('References retrieved successfully', $references);
         } catch (\Exception $e) {
             return response_error($e->getMessage(), [], 400);

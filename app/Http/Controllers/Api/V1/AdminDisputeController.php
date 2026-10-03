@@ -81,5 +81,34 @@ class AdminDisputeController extends Controller
             return response_error($e->getMessage(), [], $code);
         }
     }
+
+    /**
+     * Admin saves an internal note for a dispute without resolving it.
+     */
+    public function saveNote(Request $request, $id)
+    {
+        $dispute = Dispute::find($id);
+
+        if (!$dispute) {
+            return response_error("Dispute not found.", [], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            "admin_notes" => "required|string"
+        ]);
+
+        if ($validator->fails()) {
+            return response_error("Validation failed", $validator->errors()->toArray(), 422);
+        }
+
+        $dispute->update([
+            "admin_notes" => $request->admin_notes
+        ]);
+
+        return response_success(
+            "Internal note saved successfully.", 
+            new DisputeResource($dispute->load(["escrowTransaction.buyer", "escrowTransaction.seller", "escrowTransaction.listing"]))
+        );
+    }
 }
 

@@ -83,3 +83,4 @@ class Listing extends Model
         return $this->hasMany(Conversation::class);
     }
 }
+

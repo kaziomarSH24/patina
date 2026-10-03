@@ -14,10 +14,15 @@ class DisputeResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $escrow = $this->whenLoaded("escrowTransaction");
-        $buyer = $escrow ? $escrow->buyer : null;
-        $seller = $escrow ? $escrow->seller : null;
-        $listing = $escrow ? $escrow->listing : null;
+        $escrow = $this->relationLoaded("escrowTransaction") ? $this->escrowTransaction : null;
+        $buyer = $escrow && $escrow->relationLoaded("buyer") ? $escrow->buyer : null;
+        $seller = $escrow && $escrow->relationLoaded("seller") ? $escrow->seller : null;
+        $listing = $escrow && $escrow->relationLoaded("listing") ? $escrow->listing : null;
+
+        // Fallback for cases where relation is loaded but we still want to grab it if it exists directly on model
+        if (!$buyer && $escrow && isset($escrow->buyer)) $buyer = $escrow->buyer;
+        if (!$seller && $escrow && isset($escrow->seller)) $seller = $escrow->seller;
+        if (!$listing && $escrow && isset($escrow->listing)) $listing = $escrow->listing;
 
         return [
             "id" => $this->id,

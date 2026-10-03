@@ -245,6 +245,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::prefix('disputes')->name('disputes.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'index'])->name('index');
             Route::post('/{id}/resolve', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'resolve'])->name('resolve');
+            Route::post('/{id}/notes', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'saveNote'])->name('notes');
+        });
+
+        // Admin Market Prices
+        Route::prefix('market-prices')->name('market-prices.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'store'])->name('store');
+            Route::post('/refresh', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'refresh'])->name('refresh');
+            Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'destroy'])->name('destroy');
         });
 
         // Admin Dealer Applications
