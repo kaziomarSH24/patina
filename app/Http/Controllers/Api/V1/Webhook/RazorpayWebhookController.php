@@ -11,6 +11,9 @@ use App\Services\RazorpayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DealerSubscriptionSuccess;
+use App\Mail\DealerSubscriptionCancelled;
 
 class RazorpayWebhookController extends Controller
 {
@@ -123,6 +126,15 @@ class RazorpayWebhookController extends Controller
             }
             
             Log::info("Dealer profile activated for subscription: {$subscriptionId}");
+
+            // Send Email
+            if ($user) {
+                // If the webhook payload gives us amount and plan name, use them. Otherwise fallback.
+                $planName = $profile->plan->name ?? 'Tier Dealer';
+                $amount = isset($subscriptionData['notes']['upfront_amount']) ? $subscriptionData['notes']['upfront_amount'] : ($profile->plan->price ?? 0);
+                
+                Mail::to($user->email)->send(new DealerSubscriptionSuccess($user, $planName, $amount, $subscriptionId));
+            }
         }
     }
 
