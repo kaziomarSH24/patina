@@ -15,61 +15,42 @@ use Illuminate\Http\JsonResponse;
  */
 class DiscoverController extends Controller
 {
-    /**
-     * Get Discover Feed (Swipe UI)
-     *
-     * Returns a cursor-paginated list of live & verified watches.
-     * Supports advanced filtering: min_price, max_price, brand, watch_type.
-     * 
-     * @queryParam min_price int Filter by minimum budget. Example: 50000
-     * @queryParam max_price int Filter by maximum budget. Example: 500000
-     * @queryParam brand string Filter by brand name. Example: Rolex
-     * @queryParam watch_type string Filter by type. Example: Diver
-     * 
-     * @apiResourceCollection App\Http\Resources\ListingResource
-     * @apiResourceModel App\Models\Listing
-     */
     public function index(Request $request): JsonResponse
     {
-        $query = Listing::with('seller')
-            ->where('status', 'Live')
-            ->where('is_verified', true);
+        $query = Listing::select('listings.*')
+            ->leftJoin('dealer_profiles', 'listings.seller_id', '=', 'dealer_profiles.user_id')
+            ->leftJoin('subscription_plans', 'dealer_profiles.subscription_plan_id', '=', 'subscription_plans.id')
+            ->with('seller')
+            ->where('listings.status', 'Live')
+            ->where('listings.is_verified', true);
 
         // Budget filters
         if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->input('min_price'));
+            $query->where('listings.price', '>=', $request->input('min_price'));
         }
         if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->input('max_price'));
+            $query->where('listings.price', '<=', $request->input('max_price'));
         }
 
-        // Brand filter
+        // Brand & Type
         if ($request->filled('brand')) {
-            $query->where('brand', 'like', '%' . $request->input('brand') . '%');
+            $query->where('listings.brand', $request->input('brand'));
         }
-
-        // Watch Type filter
         if ($request->filled('watch_type')) {
-            $query->where('watch_type', 'like', '%' . $request->input('watch_type') . '%');
+            $query->where('listings.watch_type', $request->input('watch_type'));
+        }
+        if ($request->filled('condition')) {
+            $query->where('listings.condition', $request->input('condition'));
         }
         
-        // Model filter
-        if ($request->filled('model')) {
-            $query->where('model', 'like', '%' . $request->input('model') . '%');
-        }
+        // Sorting logic based on Subscription Tier priority (Highest priority first), then newest
+        $query->orderByRaw('COALESCE(subscription_plans.discovery_priority, 0) DESC')
+              ->orderBy('listings.created_at', 'desc');
 
-        // Condition filter
-        if ($request->filled('condition')) {
-            $query->where('condition', $request->input('condition'));
-        }
-
-        // Order by newest first (default for feed)
-        $query->orderBy('created_at', 'desc');
-
-        // Cursor Pagination for Swipe-style mobile UI (very fast, no page offsets)
-        // Default size is 15 items per swipe load
+        // Since we are using complex joins and orderByRaw, we switch from cursorPaginate to simplePaginate
+        // simplePaginate is just as fast as cursorPaginate (no COUNT query) and works seamlessly with joins.
         $limit = $request->input('per_page', 15);
-        $listings = $query->cursorPaginate($limit);
+        $listings = $query->simplePaginate($limit);
 
         $message = $listings->isEmpty() 
             ? 'No listings found matching your criteria' 

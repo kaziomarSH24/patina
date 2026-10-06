@@ -27,77 +27,27 @@ class ListingController extends Controller
         $this->listingService = $listingService;
         $this->marketService = $marketService;
     }
-    /**
-     * Public Market Listings
-     *
-     * Get all verified and active listings for the Discover/Market views.
-     *
-     * @apiResourceCollection App\Http\Resources\ListingResource
-     * @apiResourceModel App\Models\Listing
-     */
+
     public function index(Request $request): JsonResponse
     {
-        // Force the seller include
-        $request->merge(['include' => 'seller']);
+        $request->merge(['include_seller' => true]);
+        
+        $listings = $this->listingService->getPublicListings($request->all());
 
-        $listings = $this->listingService->getAll(function ($query) {
-            $query->where('status', 'Live')->where('is_verified', true);
-        });
-
-        return response_success('Listings retrieved successfully', [
+        return response_success('Market listings retrieved successfully.', [
             'listings' => ListingResource::collection($listings)->response()->getData(true)
         ]);
     }
 
-    /**
-     * Show Public Listing
-     *
-     * Get details of a specific listing. Unauthenticated users can only see live listings.
-     *
-     * @urlParam id int required The ID of the listing. Example: 1
-     * @apiResource App\Http\Resources\ListingResource
-     * @apiResourceModel App\Models\Listing
-     */
-    public function show($id): JsonResponse
-    {
-        $listing = $this->listingService->getById($id, ['seller']);
-
-        if ($listing->status !== 'Live' && (!Auth::guard('sanctum')->check() || Auth::guard('sanctum')->id() !== $listing->seller_id)) {
-            return response_error('Listing not found or not available', [], 404);
-        }
-
-        // Fetch market data for this listing
-        $marketData = null;
-        if (!empty($listing->reference_number)) {
-            try {
-                $marketData = $this->marketService->getPriceHistory($listing->reference_number);
-            } catch (\Exception $e) {
-                // Ignore API failures and just return null market data
-                $marketData = null;
-            }
-        }
-
-        return response_success('Listing retrieved successfully', [
-            'listing' => new ListingResource($listing),
-            'market_data' => $marketData
-        ]);
-    }
-
-    /**
-     * Create Listing
-     *
-     * Create a new listing. Requires the user to have a 'Verified' KYC status.
-     *
-     * @apiResource App\Http\Resources\ListingResource
-     * @apiResourceModel App\Models\Listing
-     */
     public function store(StoreListingRequest $request): JsonResponse
     {
         $data = $request->validated();
         $user = Auth::user();
 
-        // Verify Razorpay Payment for Non-Dealers
-        if (!$user->hasRole('dealer')) {
+        $listingData = $data;
+
+        // Check if user has credits. If not, verify Razorpay payment for listing fee.
+        if ($user->available_listing_credits <= 0) {
             try {
                 $api = new \Razorpay\Api\Api(config('services.razorpay.key'), config('services.razorpay.secret'));
                 
@@ -108,80 +58,76 @@ class ListingController extends Controller
                 ];
                 
                 $api->utility->verifyPaymentSignature($attributes);
+                
+                $listingData['razorpay_payment_id'] = $data['razorpay_payment_id'];
+                $listingData['used_free_credit'] = false;
             } catch (\Razorpay\Api\Errors\SignatureVerificationError $e) {
                 return response_error('Payment verification failed. Invalid signature.', [], 400);
             }
+        } else {
+            // Deduct 1 credit if they used a free listing credit
+            $user->decrement('available_listing_credits');
+            $listingData['used_free_credit'] = true;
         }
         
-        $listing = $this->listingService->createListingWithImages($request, $data);
+        $listing = $this->listingService->createListingWithImages($request, $listingData);
 
-        return response_success('Listing created successfully. Waiting for admin review.', [
+        return response_success('Listing created successfully.', [
             'listing' => new ListingResource($listing)
         ], 201);
     }
 
-    /**
-     * Update Listing
-     *
-     * Update an existing listing. Will resubmit the listing for admin review.
-     *
-     * @urlParam id int required The ID of the listing to update. Example: 1
-     * @apiResource App\Http\Resources\ListingResource
-     * @apiResourceModel App\Models\Listing
-     */
-    public function update(UpdateListingRequest $request, $id): JsonResponse
+    public function show($id): JsonResponse
     {
-        $data = $request->validated();
+        request()->merge(['include_seller' => true]);
         
-        $listing = $this->listingService->updateListingWithImages($request, (int) $id, $data);
+        $listing = $this->listingService->getListingById($id);
 
-        return response_success('Listing updated successfully. Resubmitted for review.', [
+        if (!$listing || ($listing->status !== 'Live' && $listing->status !== 'Sold' && $listing->user_id !== Auth::id())) {
+            return response_error('Listing not found or unavailable.', [], 404);
+        }
+
+        $this->marketService->trackView($listing);
+
+        return response_success('Listing details retrieved successfully.', [
             'listing' => new ListingResource($listing)
         ]);
     }
 
-    /**
-     * My Portfolio
-     *
-     * Get all listings (regardless of status) belonging to the authenticated user.
-     *
-     * @apiResourceCollection App\Http\Resources\ListingResource
-     * @apiResourceModel App\Models\Listing
-     */
-    public function userListings(Request $request): JsonResponse
+    public function update(UpdateListingRequest $request, $id): JsonResponse
     {
-        $request->merge(['include' => 'seller']);
-        $userId = Auth::id();
+        $data = $request->validated();
         
-        $listings = $this->listingService->getAll(function ($query) use ($userId) {
-            $query->where('seller_id', $userId);
-        });
+        $listing = Listing::where('user_id', Auth::id())->find($id);
 
-        return response_success('User portfolio retrieved successfully', [
-            'listings' => ListingResource::collection($listings)->response()->getData(true)
+        if (!$listing) {
+            return response_error('Listing not found or you do not have permission to edit it.', [], 404);
+        }
+
+        if ($listing->status === 'Sold') {
+            return response_error('Cannot edit a listing that has already been sold.', [], 400);
+        }
+
+        $listing = $this->listingService->updateListing($listing, $data);
+
+        return response_success('Listing updated successfully.', [
+            'listing' => new ListingResource($listing)
         ]);
     }
 
-    /**
-     * Delete Listing
-     *
-     * Delete a listing. Only the owner can delete it, and only if it's not Sold.
-     *
-     * @urlParam id int required The ID of the listing to delete. Example: 1
-     */
     public function destroy($id): JsonResponse
     {
-        $listing = $this->listingService->getById($id);
+        $listing = Listing::where('user_id', Auth::id())->find($id);
 
-        if ($listing->seller_id !== Auth::id()) {
-            return response_error('Unauthorized action.', [], 403);
+        if (!$listing) {
+            return response_error('Listing not found or you do not have permission to delete it.', [], 404);
         }
 
         if ($listing->status === 'Sold') {
             return response_error('Cannot delete a sold listing.', [], 400);
         }
 
-        $this->listingService->delete($id);
+        $this->listingService->deleteListing($listing);
 
         return response_success('Listing deleted successfully.');
     }

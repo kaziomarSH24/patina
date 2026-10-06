@@ -1,5 +1,22 @@
 <?php
 
+use App\Http\Controllers\Api\V1\PublicDealerController;
+use App\Http\Controllers\Api\V1\WatchDataController;
+use App\Http\Controllers\Api\V1\UserAddressController;
+use App\Http\Controllers\Api\V1\PriceAlertController;
+use App\Http\Controllers\Api\V1\EscrowController;
+use App\Http\Controllers\Api\V1\WishlistController;
+use App\Http\Controllers\Api\V1\ReviewController;
+use App\Http\Controllers\Api\V1\FollowController;
+use App\Http\Controllers\KycController;
+use App\Http\Controllers\Api\V1\DisputeController;
+use App\Http\Controllers\Api\V1\LogisticsController;
+use App\Http\Controllers\Api\V1\AdminEscrowController;
+use App\Http\Controllers\Api\V1\AdminDisputeController;
+use App\Http\Controllers\Api\V1\Admin\AnalyticsController;
+use App\Http\Controllers\Api\V1\Admin\AdminNotificationController;
+use App\Http\Controllers\Api\V1\Admin\AdminProfileController;
+use App\Http\Controllers\Api\V1\Admin\MarketPriceController;
 use Illuminate\Support\Facades\Route;
 
 // Auth Controllers
@@ -19,7 +36,6 @@ use App\Http\Controllers\Api\V1\WatchCatalogController;
 
 // Checkout & Escrow Controllers
 use App\Http\Controllers\Api\V1\CheckoutController;
-use App\Http\Controllers\Api\V1\EscrowController;
 
 // Dealer Controllers
 use App\Http\Controllers\Api\V1\Dealer\KycController as DealerKycController;
@@ -89,14 +105,14 @@ Route::prefix('v1')->group(function () {
     });
 
     // Public Dealer Directory
-    Route::get('/dealers', [\App\Http\Controllers\Api\V1\PublicDealerController::class, 'index'])->name('api.v1.dealers.index');
-    Route::get('/dealers/{id}', [\App\Http\Controllers\Api\V1\PublicDealerController::class, 'show'])->name('api.v1.dealers.show');
+    Route::get('/dealers', [PublicDealerController::class, 'index'])->name('api.v1.dealers.index');
+    Route::get('/dealers/{id}', [PublicDealerController::class, 'show'])->name('api.v1.dealers.show');
 
     // Watch Data Proxy (For Listing Creation Dropdowns)
     Route::prefix('watch-data')->group(function () {
-        Route::get('/brands', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'brands'])->name('api.v1.watch-data.brands');
-        Route::get('/models', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'models'])->name('api.v1.watch-data.models');
-        Route::get('/references', [\App\Http\Controllers\Api\V1\WatchDataController::class, 'references'])->name('api.v1.watch-data.references');
+        Route::get('/brands', [WatchDataController::class, 'brands'])->name('api.v1.watch-data.brands');
+        Route::get('/models', [WatchDataController::class, 'models'])->name('api.v1.watch-data.models');
+        Route::get('/references', [WatchDataController::class, 'references'])->name('api.v1.watch-data.references');
     });
 });
 
@@ -121,7 +137,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
     });
 
     // Addresses
-    Route::apiResource('addresses', \App\Http\Controllers\Api\V1\UserAddressController::class);
+    Route::apiResource('addresses', UserAddressController::class);
 
     // Portfolio
     Route::prefix('portfolio')->name('api.v1.portfolio.')->group(function () {
@@ -150,30 +166,30 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
 
     // Price Alerts
     Route::prefix('price-alerts')->name('api.v1.price-alerts.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'index'])->name('index');
-        Route::post('/', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'store'])->name('store');
-        Route::post('/{id}/toggle', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'toggle'])->name('toggle');
-        Route::delete('/{id}', [\App\Http\Controllers\Api\V1\PriceAlertController::class, 'destroy'])->name('destroy');
+        Route::get('/', [PriceAlertController::class, 'index'])->name('index');
+        Route::post('/', [PriceAlertController::class, 'store'])->name('store');
+        Route::post('/{id}/toggle', [PriceAlertController::class, 'toggle'])->name('toggle');
+        Route::delete('/{id}', [PriceAlertController::class, 'destroy'])->name('destroy');
     });
 
     // User Purchases (History)
-    Route::get('/user/purchases', [\App\Http\Controllers\Api\V1\EscrowController::class, 'purchases'])->name('api.v1.user.purchases');
+    Route::get('/user/purchases', [EscrowController::class, 'purchases'])->name('api.v1.user.purchases');
 
     // Wishlists (Favorites)
     Route::prefix('wishlists')->name('api.v1.wishlists.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\V1\WishlistController::class, 'index'])->name('index');
-        Route::post('/toggle', [\App\Http\Controllers\Api\V1\WishlistController::class, 'toggle'])->name('toggle');
+        Route::get('/', [WishlistController::class, 'index'])->name('index');
+        Route::post('/toggle', [WishlistController::class, 'toggle'])->name('toggle');
     });
 
     // Reviews
-    Route::post('/reviews', [\App\Http\Controllers\Api\V1\ReviewController::class, 'store'])->name('api.v1.reviews.store');
-    Route::get('/users/{user}/reviews', [\App\Http\Controllers\Api\V1\ReviewController::class, 'userReviews'])->name('api.v1.users.reviews');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('api.v1.reviews.store');
+    Route::get('/users/{user}/reviews', [ReviewController::class, 'userReviews'])->name('api.v1.users.reviews');
 
     // User Profile & Follow System
     Route::prefix('users')->name('api.v1.users.')->group(function () {
-        Route::post('/{id}/follow', [\App\Http\Controllers\Api\V1\FollowController::class, 'toggleFollow'])->name('follow');
-        Route::get('/{id}/followers', [\App\Http\Controllers\Api\V1\FollowController::class, 'followers'])->name('followers');
-        Route::get('/{id}/following', [\App\Http\Controllers\Api\V1\FollowController::class, 'following'])->name('following');
+        Route::post('/{id}/follow', [FollowController::class, 'toggleFollow'])->name('follow');
+        Route::get('/{id}/followers', [FollowController::class, 'followers'])->name('followers');
+        Route::get('/{id}/following', [FollowController::class, 'following'])->name('following');
     });
 
     // Dealer/User KYC
@@ -182,8 +198,8 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/status', [DealerKycController::class, 'status'])->name('status');
 
         // Sandbox Verification (For testing & frontend integration)
-        Route::post('/sandbox/verify-pan', [\App\Http\Controllers\KycController::class, 'verifyPan'])->name('sandbox.verify-pan');
-        Route::post('/sandbox/verify-bank', [\App\Http\Controllers\KycController::class, 'verifyBank'])->name('sandbox.verify-bank');
+        Route::post('/sandbox/verify-pan', [KycController::class, 'verifyPan'])->name('sandbox.verify-pan');
+        Route::post('/sandbox/verify-bank', [KycController::class, 'verifyBank'])->name('sandbox.verify-bank');
     });
 
     // Subscription Plans
@@ -207,13 +223,13 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/{escrow}/tracking', [EscrowController::class, 'tracking'])->name('tracking');
         Route::post('/{escrow}/ship', [EscrowController::class, 'ship'])->name('ship');
         Route::post('/{escrow}/confirm', [EscrowController::class, 'confirm'])->name('confirm');
-        Route::post('/{escrow}/dispute', [\App\Http\Controllers\Api\V1\DisputeController::class, 'raiseDispute'])->name('dispute');
-        Route::post('/{escrow}/dispute/reply', [\App\Http\Controllers\Api\V1\DisputeController::class, 'replyDispute'])->name('dispute.reply');
+        Route::post('/{escrow}/dispute', [DisputeController::class, 'raiseDispute'])->name('dispute');
+        Route::post('/{escrow}/dispute/reply', [DisputeController::class, 'replyDispute'])->name('dispute.reply');
     });
 
     // Logistics
     Route::prefix('logistics')->name('api.v1.logistics.')->group(function () {
-        Route::get('/pincode/{pincode}', [\App\Http\Controllers\Api\V1\LogisticsController::class, 'checkPincode'])->name('checkPincode');
+        Route::get('/pincode/{pincode}', [LogisticsController::class, 'checkPincode'])->name('checkPincode');
     });
 
     // Admin Routes (auth + role:admin)
@@ -233,92 +249,131 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::apiResource('subscription-plans', AdminSubscriptionPlanController::class);
 
         // Admin Escrow Management
-        Route::prefix('escrows')->name('escrows.')->group(function () {
-            Route::get('/stats', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'stats'])->name('stats');
-            Route::get('/', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'index'])->name('index');
-            Route::get('/{id}/tracking', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'tracking'])->name('tracking');
-            Route::post('/{id}/release', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'release'])->name('release');
-            Route::post('/{id}/refund', [\App\Http\Controllers\Api\V1\AdminEscrowController::class, 'refund'])->name('refund');
+        Route::controller(AdminEscrowController::class)->prefix('escrows')->name('escrows.')->group(function () {
+            Route::get('/stats', 'stats')->name('stats');
+            Route::get('/', 'index')->name('index');
+            Route::get('/{id}/tracking', 'tracking')->name('tracking');
+            Route::post('/{id}/release', 'release')->name('release');
+            Route::post('/{id}/refund', 'refund')->name('refund');
         });
 
         // Admin Disputes
-        Route::prefix('disputes')->name('disputes.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'index'])->name('index');
-            Route::post('/{id}/resolve', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'resolve'])->name('resolve');
-            Route::post('/{id}/notes', [\App\Http\Controllers\Api\V1\AdminDisputeController::class, 'saveNote'])->name('notes');
+        Route::controller(AdminDisputeController::class)->prefix('disputes')->name('disputes.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/{id}/resolve', 'resolve')->name('resolve');
+            Route::post('/{id}/notes', 'saveNote')->name('notes');
         });
 
+        // Admin Analytics
+        Route::get('/analytics', [AnalyticsController::class, 'index'])->name('admin.analytics.index');
+
+        // Admin Notifications
+        Route::get('/notifications/critical', [AdminNotificationController::class, 'criticalAlerts'])->name('admin.notifications.critical');
+
+        // Admin Profile Settings
+        Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+
+
         // Admin Market Prices
-        Route::prefix('market-prices')->name('market-prices.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'index'])->name('index');
-            Route::post('/', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'store'])->name('store');
-            Route::post('/refresh', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'refresh'])->name('refresh');
-            Route::delete('/{id}', [\App\Http\Controllers\Api\V1\Admin\MarketPriceController::class, 'destroy'])->name('destroy');
+        Route::controller(MarketPriceController::class)->prefix('market-prices')->name('market-prices.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::post('/refresh', 'refresh')->name('refresh');
+            Route::delete('/{id}', 'destroy')->name('destroy');
         });
 
         // Admin Dealer Applications
-        Route::prefix('dealer-applications')->name('dealer-applications.')->group(function () {
-            Route::get('/', [AdminDealerApplicationController::class, 'index'])->name('index');
-            Route::get('/{id}', [AdminDealerApplicationController::class, 'show'])->name('show');
-            Route::patch('/{id}/status', [AdminDealerApplicationController::class, 'updateStatus'])->name('status');
-            Route::delete('/{id}', [AdminDealerApplicationController::class, 'destroy'])->name('destroy');
+        Route::controller(AdminDealerApplicationController::class)->prefix('dealer-applications')->name('dealer-applications.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{id}', 'show')->name('show');
+            Route::patch('/{id}/status', 'updateStatus')->name('status');
+            Route::delete('/{id}', 'destroy')->name('destroy');
         });
 
         // Admin Users
-        Route::prefix('users')->name('users.')->group(function () {
-            Route::get('/', [AdminUserController::class, 'index'])->name('index');
-            Route::get('/{id}/history', [AdminUserController::class, 'history'])->name('history');
-            Route::patch('/{id}/standing', [AdminUserController::class, 'updateStanding'])->name('update-standing');
+        Route::controller(AdminUserController::class)->prefix('users')->name('users.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{id}/history', 'history')->name('history');
+            Route::patch('/{id}/standing', 'updateStanding')->name('update-standing');
         });
 
         // Admin Listings
-        Route::prefix('listings')->name('listings.')->group(function () {
-            Route::get('/', [AdminListingController::class, 'index'])->name('index');
-            Route::get('/{id}', [AdminListingController::class, 'show'])->name('show');
-            Route::patch('/{id}', [AdminListingController::class, 'update'])->name('update');
-            Route::patch('/{id}/status', [AdminListingController::class, 'updateStatus'])->name('update-status');
+        Route::controller(AdminListingController::class)->prefix('listings')->name('listings.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{id}', 'show')->name('show');
+            Route::patch('/{id}', 'update')->name('update');
+            Route::patch('/{id}/status', 'updateStatus')->name('update-status');
         });
     });
 
     // Chat Module Routes
     Route::prefix('chat')->name('api.v1.chat.')->group(function () {
         // Conversations
-        Route::get('/conversations', [ConversationController::class, 'index'])->name('conversations.index');
-        Route::post('/conversations', [ConversationController::class, 'store'])->name('conversations.store');
+        Route::controller(ConversationController::class)->prefix('conversations')->name('conversations.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+        });
 
         // Messages
-        Route::get('/conversations/{conversation}/messages', [MessageController::class, 'index'])->name('messages.index');
-        Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
-        Route::patch('/messages/{message}', [MessageController::class, 'update'])->name('messages.update');
-        Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
-        Route::post('/messages/read', [MessageController::class, 'markAsRead'])->name('messages.read');
+        Route::controller(MessageController::class)->group(function () {
+            Route::get('/conversations/{conversation}/messages', 'index')->name('messages.index');
+            Route::post('/messages', 'store')->name('messages.store');
+            Route::patch('/messages/{message}', 'update')->name('messages.update');
+            Route::delete('/messages/{message}', 'destroy')->name('messages.destroy');
+            Route::post('/messages/read', 'markAsRead')->name('messages.read');
+            Route::post('/conversations/{conversation}/typing', 'typing')->name('typing');
+        });
 
         // Offers (Escrow Flow)
-        Route::post('/conversations/{conversation}/offers', [OfferController::class, 'store'])->name('offers.store');
-        Route::patch('/conversations/{conversation}/offers/{offer}/status', [OfferController::class, 'updateStatus'])->name('offers.status');
+        Route::controller(OfferController::class)->prefix('conversations/{conversation}/offers')->name('offers.')->group(function () {
+            Route::post('/', 'store')->name('store');
+            Route::patch('/{offer}/status', 'updateStatus')->name('status');
+        });
 
         // Group Management
-        Route::post('/groups/{conversation}/members', [GroupController::class, 'addMember'])->name('groups.members.add');
-        Route::delete('/groups/{conversation}/members', [GroupController::class, 'removeMember'])->name('groups.members.remove');
-        Route::post('/groups/{conversation}/leave', [GroupController::class, 'leaveGroup'])->name('groups.leave');
-        Route::post('/groups/{conversation}/promote', [GroupController::class, 'promoteToAdmin'])->name('groups.promote');
-        Route::post('/groups/{conversation}/demote', [GroupController::class, 'demoteToMember'])->name('groups.demote');
-
-        // Real-time
-        Route::post('/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('typing');
+        Route::controller(GroupController::class)->prefix('groups/{conversation}')->name('groups.')->group(function () {
+            Route::post('/members', 'addMember')->name('members.add');
+            Route::delete('/members', 'removeMember')->name('members.remove');
+            Route::post('/leave', 'leaveGroup')->name('leave');
+            Route::post('/promote', 'promoteToAdmin')->name('promote');
+            Route::post('/demote', 'demoteToMember')->name('demote');
+        });
     });
 
     // Notification Routes
-    Route::prefix('notifications')->name('api.v1.notifications.')->group(function () {
-        Route::get('/', [NotificationController::class, 'index'])->name('index');
-        Route::get('/stats', [NotificationController::class, 'stats'])->name('stats');
-        Route::post('/{notification}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
-        Route::post('/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-as-read');
-        Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
+    Route::controller(NotificationController::class)->prefix('notifications')->name('api.v1.notifications.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/stats', 'stats')->name('stats');
+        Route::post('/{notification}/mark-as-read', 'markAsRead')->name('mark-as-read');
+        Route::post('/mark-all-as-read', 'markAllAsRead')->name('mark-all-as-read');
+        Route::delete('/{notification}', 'destroy')->name('destroy');
     });
 
     // Fallback Route
     Route::fallback(function () {
         return response_error('The requested API endpoint does not exist.', [], 404);
     });
+});
+
+// TEMP: Public routes for seeding and clearing dummy analytics data
+Route::get('/seed-analytics', function () {
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'AnalyticsDataSeeder', '--force' => true]);
+    return response()->json(['message' => 'Seeding completed successfully!']);
+});
+
+Route::get('/clear-analytics', function () {
+    // Delete all users created by this seeder (email starts with seeded)
+    $users = \App\Models\User::where('email', 'like', 'seeded%@patinawatches.com')->get();
+    foreach ($users as $user) {
+        $user->forceDelete(); // forceDelete in case of soft deletes
+    }
+
+    // Delete all listings created by this seeder (model starts with Seeded Model or Review Seed)
+    $listings = \App\Models\Listing::where('model', 'like', 'Seeded Model %')
+                                   ->orWhere('model', 'like', 'Review Seed %')->get();
+    foreach ($listings as $listing) {
+        $listing->forceDelete();
+    }
+    
+    return response()->json(['message' => 'All seeded analytics dummy data has been permanently cleared!']);
 });

@@ -87,9 +87,16 @@ class ListingService extends BaseService
      */
     public function createListingWithImages(Request $request, array $data): Listing
     {
-        $data['seller_id'] = Auth::id();
-        $data['status'] = 'Under Review'; // Requires admin review
-        $data['is_verified'] = false; // Requires admin verification
+        $user = Auth::user();
+        $data['seller_id'] = $user->id;
+        
+        if ($user->hasRole('dealer')) {
+            $data['status'] = 'Live'; // Auto-approved for dealers
+            $data['is_verified'] = true;
+        } else {
+            $data['status'] = 'Under Review'; // Requires admin review
+            $data['is_verified'] = false; // Requires admin verification
+        }
 
         // Handle multiple image uploads using the existing FileUploadTrait
         $imagePaths = [];

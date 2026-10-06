@@ -29,7 +29,7 @@ class CheckoutController extends Controller
             'offer_id' => 'required|exists:offers,id',
         ]);
 
-        $offer = Offer::with(['listing.seller', 'buyer'])->findOrFail($validated['offer_id']);
+        $offer = Offer::with(['listing.seller.dealerProfile.subscriptionPlan', 'buyer'])->findOrFail($validated['offer_id']);
 
         // Check if user is the buyer
         if ($offer->buyer_id !== $request->user()->id) {
@@ -57,12 +57,21 @@ class CheckoutController extends Controller
 
         $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
 
-        // Amount in paisa (multiply by 100)
-        $amountInPaisa = (int) ($offer->amount * 100);
+        // Math Calculations based on Subscription Plans
+        $seller = $offer->listing->seller;
+        $sellerPlan = $seller->dealerProfile?->subscriptionPlan;
+        
+        $sellerCommissionPercent = $sellerPlan ? $sellerPlan->seller_commission_percent : config('patina.fees.default_commission');
+        $sellerCommissionAmount = ($offer->amount * $sellerCommissionPercent) / 100;
 
-        // Example Platform Fee: 5% of the offer amount
-        $platformFeePercent = 5;
-        $commissionAmount = ($offer->amount * $platformFeePercent) / 100;
+        $buyerCommissionPercent = $sellerPlan ? $sellerPlan->buyer_commission_percent : config('patina.fees.default_commission');
+        $buyerCommissionAmount = ($offer->amount * $buyerCommissionPercent) / 100;
+        
+        $shippingFee = config('patina.fees.shipping');
+        $totalPayable = $offer->amount + $buyerCommissionAmount + $shippingFee;
+
+        // Amount in paisa (multiply by 100)
+        $amountInPaisa = (int) ($totalPayable * 100);
 
         DB::beginTransaction();
         try {
@@ -84,18 +93,21 @@ class CheckoutController extends Controller
             // The actual EscrowTransaction ('Payment Received') will be created ONLY 
             // after the Razorpay webhook confirms a successful payment.
             $transaction = Transaction::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $buyer->id,
                 'payable_type' => Offer::class,
                 'payable_id' => $offer->id,
                 'gateway' => 'razorpay',
                 'payment_intent_id' => $razorpayOrder['id'], // Storing the razorpay order ID
-                'amount' => $offer->amount,
+                'amount' => $totalPayable,
                 'currency' => 'INR',
                 'status' => 'pending',
                 'metadata' => [
-                    'commission_amount' => $commissionAmount,
-                    'seller_id' => $offer->listing->seller_id,
-                    'buyer_id' => $offer->buyer_id,
+                    'base_amount' => $offer->amount,
+                    'seller_commission_amount' => $sellerCommissionAmount,
+                    'buyer_commission_amount' => $buyerCommissionAmount,
+                    'shipping_fee' => $shippingFee,
+                    'seller_id' => $seller->id,
+                    'buyer_id' => $buyer->id,
                     'listing_id' => $offer->listing_id,
                 ],
             ]);
@@ -104,7 +116,12 @@ class CheckoutController extends Controller
 
             return response_success('Checkout initiated.', [
                 'order_id' => $razorpayOrder['id'],
-                'amount' => $offer->amount,
+                'amount' => $totalPayable,
+                'breakdown' => [
+                    'watch_price' => $offer->amount,
+                    'buyer_commission' => $buyerCommissionAmount,
+                    'shipping_fee' => $shippingFee,
+                ],
                 'currency' => 'INR',
                 'key_id' => env('RAZORPAY_KEY'),
                 'transaction_id' => $transaction->id,
@@ -169,15 +186,13 @@ class CheckoutController extends Controller
                         'listing_id' => $metadata['listing_id'],
                         'buyer_id' => $metadata['buyer_id'],
                         'seller_id' => $metadata['seller_id'],
-                        'amount' => $transaction->amount,
-                        'commission_amount' => $metadata['commission_amount'] ?? 0,
+                        'amount' => $metadata['base_amount'],
+                        'commission_amount' => $metadata['seller_commission_amount'] ?? 0,
                         'status' => 'Payment Received',
                         'razorpay_order_id' => $orderId,
                         'razorpay_payment_id' => $paymentId,
                     ]);
 
-                    // Also update the transaction's payable to point to the Escrow now if we wanted, 
-                    // but keeping it mapped to Offer is fine too. Let's update the listing status to 'sold' or 'pending delivery'.
                     $escrow->listing()->update(['status' => 'sold']);
 
                     DB::commit();

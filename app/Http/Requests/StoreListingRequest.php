@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class StoreListingRequest extends FormRequest
 {
@@ -47,18 +46,18 @@ class StoreListingRequest extends FormRequest
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'brand_certificate' => 'nullable|file|mimes:pdf,jpeg,png,jpg,webp|max:10240',
             
-            // Payment fields (Required for non-dealers)
-            'razorpay_payment_id' => 'required_unless:is_dealer,true|string',
-            'razorpay_order_id' => 'required_unless:is_dealer,true|string',
-            'razorpay_signature' => 'required_unless:is_dealer,true|string',
+            // Payment fields (Required if user has no free credits)
+            'razorpay_payment_id' => 'required_if:has_credits,false|string',
+            'razorpay_order_id' => 'required_if:has_credits,false|string',
+            'razorpay_signature' => 'required_if:has_credits,false|string',
         ];
     }
 
     protected function prepareForValidation()
     {
-        // Add a helper field to easily validate if the user is a dealer
+        // Add a helper field to easily validate if the user has credits
         $this->merge([
-            'is_dealer' => $this->user() && $this->user()->hasRole('dealer') ? 'true' : 'false',
+            'has_credits' => $this->user() && $this->user()->available_listing_credits > 0 ? 'true' : 'false',
         ]);
     }
 }

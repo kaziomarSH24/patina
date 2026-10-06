@@ -21,6 +21,8 @@ class Listing extends Model
         'price',
         'status',
         'is_verified',
+        'razorpay_payment_id',
+        'used_free_credit',
         'rejection_reason',
         'condition_notes',
         'condition',

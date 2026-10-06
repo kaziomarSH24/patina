@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\SubscriptionPlan;
 
 class SubscriptionPlanSeeder extends Seeder
 {
@@ -14,12 +15,16 @@ class SubscriptionPlanSeeder extends Seeder
     {
         $plans = [
             [
-                'name' => 'Basic',
-                'slug' => 'basic',
+                'name' => 'Tier 1 Dealer',
+                'slug' => 'tier-1-dealer',
                 'price' => 10000.00,
+                'listing_credits' => 10,
+                'seller_commission_percent' => 8.00,
+                'buyer_commission_percent' => 4.00,
+                'discovery_priority' => 1,
                 'razorpay_plan_id' => null,
                 'features' => json_encode([
-                    'max_listings' => 50,
+                    'max_listings' => 10,
                     'priority_support' => false,
                     'analytics_access' => false,
                 ]),
@@ -28,12 +33,16 @@ class SubscriptionPlanSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Professional',
-                'slug' => 'professional',
-                'price' => 20000.00,
+                'name' => 'Tier 2 Dealer',
+                'slug' => 'tier-2-dealer',
+                'price' => 25000.00,
+                'listing_credits' => 30,
+                'seller_commission_percent' => 6.00,
+                'buyer_commission_percent' => 4.00,
+                'discovery_priority' => 2,
                 'razorpay_plan_id' => null,
                 'features' => json_encode([
-                    'max_listings' => 200,
+                    'max_listings' => 30,
                     'priority_support' => true,
                     'analytics_access' => true,
                 ]),
@@ -42,15 +51,19 @@ class SubscriptionPlanSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Premium',
-                'slug' => 'premium',
+                'name' => 'Tier 3 Dealer',
+                'slug' => 'tier-3-dealer',
                 'price' => 40000.00,
+                'listing_credits' => 50,
+                'seller_commission_percent' => 4.00,
+                'buyer_commission_percent' => 4.00,
+                'discovery_priority' => 3,
                 'razorpay_plan_id' => null,
                 'features' => json_encode([
-                    'max_listings' => -1, // Unlimited
+                    'max_listings' => 50,
                     'priority_support' => true,
                     'analytics_access' => true,
-                    'featured_listings' => 10,
+                    'featured_listings' => true,
                 ]),
                 'is_active' => true,
                 'created_at' => now(),
@@ -58,6 +71,12 @@ class SubscriptionPlanSeeder extends Seeder
             ],
         ];
 
-        \App\Models\SubscriptionPlan::insert($plans);
+        // Clear existing plans if needed or use updateOrCreate (For simplicity, let's truncate or just loop and updateOrCreate to avoid duplicating)
+        foreach ($plans as $plan) {
+            SubscriptionPlan::updateOrCreate(
+                ['slug' => $plan['slug']],
+                $plan
+            );
+        }
     }
 }

@@ -23,9 +23,6 @@ class RazorpayService
         }
     }
 
-    /**
-     * Create a customer in Razorpay for a given user.
-     */
     public function createOrGetCustomer(User $user)
     {
         $profile = $user->dealerProfile;
@@ -56,9 +53,6 @@ class RazorpayService
         }
     }
 
-    /**
-     * Create a subscription for a dealer
-     */
     public function createSubscription(User $user, SubscriptionPlan $plan)
     {
         if (!$plan->razorpay_plan_id) {
@@ -66,9 +60,11 @@ class RazorpayService
         }
 
         $customerId = $this->createOrGetCustomer($user);
+        $profile = $user->dealerProfile;
+        $isUsingPromo = false;
 
         try {
-            $subscription = $this->api->subscription->create([
+            $subscriptionData = [
                 'plan_id' => $plan->razorpay_plan_id,
                 'customer_id' => $customerId,
                 'total_count' => 120, // Example: 10 years
@@ -77,14 +73,42 @@ class RazorpayService
                     'user_id' => $user->id,
                     'plan_id' => $plan->id
                 ]
-            ]);
+            ];
 
-            // Save the subscription ID to the profile, but don't activate yet
-            if ($user->dealerProfile) {
-                $user->dealerProfile->update([
+            // Launch Promo Logic (Only if the dealer has NEVER used a promo before)
+            if ($profile && !$profile->has_used_launch_promo) {
+                if ($plan->slug === config('patina.plans.tier_1.slug')) {
+                    // First week free
+                    $subscriptionData['start_at'] = now()->addDays(config('patina.plans.tier_1.trial_days'))->timestamp;
+                    $isUsingPromo = true;
+                } elseif ($plan->slug === config('patina.plans.tier_2.slug')) {
+                    // Upfront discount
+                    $subscriptionData['start_at'] = now()->addDays(config('patina.plans.tier_2.defer_days'))->timestamp;
+                    $subscriptionData['upfront_amount'] = (int) (($plan->price * config('patina.plans.tier_2.upfront_percentage')) * 100);
+                    $isUsingPromo = true;
+                } elseif ($plan->slug === config('patina.plans.tier_3.slug')) {
+                    // Upfront discount
+                    $subscriptionData['start_at'] = now()->addDays(config('patina.plans.tier_3.defer_days'))->timestamp;
+                    $subscriptionData['upfront_amount'] = (int) (($plan->price * config('patina.plans.tier_3.upfront_percentage')) * 100);
+                    $isUsingPromo = true;
+                }
+            }
+
+            // Generate subscription on Razorpay FIRST
+            $subscription = $this->api->subscription->create($subscriptionData);
+
+            // If successful, save the subscription ID to the profile and lock the promo
+            if ($profile) {
+                $updateData = [
                     'razorpay_subscription_id' => $subscription->id,
                     'subscription_plan_id' => $plan->id
-                ]);
+                ];
+
+                if ($isUsingPromo) {
+                    $updateData['has_used_launch_promo'] = true;
+                }
+
+                $profile->update($updateData);
             }
 
             return $subscription;
@@ -94,14 +118,10 @@ class RazorpayService
         }
     }
 
-    /**
-     * Verify Webhook Signature
-     */
     public function verifyWebhookSignature($payload, $signature)
     {
-        $secret = config('services.razorpay.webhook_secret'); // You need to set this if using strict webhooks
+        $secret = config('services.razorpay.webhook_secret');
         if(!$secret) {
-            // fallback to key secret if explicit webhook secret is not set
             $secret = config('services.razorpay.secret');
         }
 
