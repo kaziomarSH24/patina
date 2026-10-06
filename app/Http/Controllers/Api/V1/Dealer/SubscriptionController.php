@@ -72,16 +72,24 @@ class SubscriptionController extends Controller
             return response_error('No active subscription found.', [], 400);
         }
 
+        if ($profile->subscription_status !== 'active') {
+            return response_error('Only an active subscription can be cancelled.', [], 400);
+        }
+
         try {
             $this->razorpayService->cancelSubscription($profile->razorpay_subscription_id);
             
-            // Note: The actual status update (removing role, etc.) will happen 
-            // via the 'subscription.cancelled' Webhook for safety. 
-            // But we can eagerly update it here too.
             $profile->update(['subscription_status' => 'cancelled']);
             
+            // Same as the webhook: downgrade to customer (don't leave the user role-less)
             if ($user->hasRole('dealer')) {
-                $user->removeRole('dealer');
+                $user->syncRoles(['customer']);
+            }
+
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\DealerSubscriptionCancelled($user));
+            } catch (\Exception $mailEx) {
+                \Illuminate\Support\Facades\Log::error('Subscription cancelled email failed: ' . $mailEx->getMessage());
             }
 
             return response_success('Subscription cancelled successfully.');

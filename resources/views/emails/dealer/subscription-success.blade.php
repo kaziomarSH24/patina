@@ -6,8 +6,8 @@ Hi {{ $user->name }},
 Your subscription for **{{ $planName }}** has been successfully activated. 
 You can now start listing your watches and managing your inventory.
 
-**Transaction Details:**
-- **Amount Paid:** ₹{{ number_format($amount, 2) }}
+**Subscription Details:**
+- **Monthly Plan Price:** ₹{{ number_format($amount, 2) }}
 - **Subscription ID:** {{ $subscriptionId }}
 
 <x-mail::button :url="config('app.url') . '/dealer/dashboard'">

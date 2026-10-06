@@ -128,6 +128,10 @@ class RazorpayWebhookController extends Controller
         $profile = DealerProfile::where('razorpay_subscription_id', $subscriptionId)->first();
         
         if ($profile) {
+            // Razorpay fires both 'authenticated' and 'charged' (and 'charged' again every month).
+            // Only send the welcome email on the first activation.
+            $wasAlreadyActive = $profile->subscription_status === 'active';
+
             // Activate the profile and subscription
             $profile->update([
                 'status' => 'approved',
@@ -142,13 +146,14 @@ class RazorpayWebhookController extends Controller
             
             Log::info("Dealer profile activated for subscription: {$subscriptionId}");
 
-            // Send Email
-            if ($user) {
-                // If the webhook payload gives us amount and plan name, use them. Otherwise fallback.
-                $planName = $profile->plan->name ?? 'Tier Dealer';
-                $amount = isset($subscriptionData['notes']['upfront_amount']) ? $subscriptionData['notes']['upfront_amount'] : ($profile->plan->price ?? 0);
-                
-                Mail::to($user->email)->send(new DealerSubscriptionSuccess($user, $planName, $amount, $subscriptionId));
+            if ($user && !$wasAlreadyActive) {
+                try {
+                    $planName = $profile->plan->name ?? 'Dealer Plan';
+                    $amount = $profile->plan->price ?? 0;
+                    Mail::to($user->email)->send(new DealerSubscriptionSuccess($user, $planName, $amount, $subscriptionId));
+                } catch (\Exception $mailEx) {
+                    Log::error('Subscription success email failed: ' . $mailEx->getMessage());
+                }
             }
         }
     }
@@ -160,6 +165,8 @@ class RazorpayWebhookController extends Controller
         $profile = DealerProfile::where('razorpay_subscription_id', $subscriptionId)->first();
         
         if ($profile) {
+            $wasAlreadyCancelled = $profile->subscription_status === 'cancelled';
+
             // Downgrade the subscription
             $profile->update([
                 'subscription_status' => 'cancelled' // Or 'halted' based on exact status if preferred
@@ -173,8 +180,14 @@ class RazorpayWebhookController extends Controller
 
             Log::info("Dealer profile deactivated due to subscription cancellation: {$subscriptionId}");
 
-            if ($user) {
-                Mail::to($user->email)->send(new DealerSubscriptionCancelled($user));
+            // If the Cancel API already handled this (status was already 'cancelled'),
+            // it has sent the email, so skip here to avoid duplicates.
+            if ($user && !$wasAlreadyCancelled) {
+                try {
+                    Mail::to($user->email)->send(new DealerSubscriptionCancelled($user));
+                } catch (\Exception $mailEx) {
+                    Log::error('Subscription cancelled email failed: ' . $mailEx->getMessage());
+                }
             }
         }
     }
