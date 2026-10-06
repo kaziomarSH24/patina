@@ -54,8 +54,17 @@ class DealerOnboardingService extends BaseService
         
         $data['user_id'] = $user->id;
         
-        // If not already approved, set status to pending review
-        if ($existingProfile->status !== 'approved') {
+        // A dealer whose subscription was cancelled (by them or by failed payments)
+        // is re-applying: treat it as a fresh application that needs admin review again.
+        $isReapplyAfterCancel = $existingProfile->exists
+            && $existingProfile->subscription_status === 'cancelled';
+
+        if ($isReapplyAfterCancel) {
+            $data['status'] = 'pending';
+            $data['subscription_status'] = 'Pending Payment';
+            $data['razorpay_subscription_id'] = null;
+        } elseif ($existingProfile->status !== 'approved') {
+            // If not already approved, set status to pending review
             $data['status'] = 'pending';
         }
 

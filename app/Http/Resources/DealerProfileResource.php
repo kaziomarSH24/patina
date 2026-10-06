@@ -42,6 +42,7 @@ class DealerProfileResource extends JsonResource
             'pan_number' => $this->pan_number,
             'gst_certificate_url' => $this->gst_certificate_url,
             'status' => $this->status,
+            'subscription_status' => $this->subscription_status,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
