@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DealerSubscriptionSuccess;
 use App\Mail\DealerSubscriptionCancelled;
+use App\Mail\EscrowPaymentSuccess;
 
 class RazorpayWebhookController extends Controller
 {
@@ -98,6 +99,20 @@ class RazorpayWebhookController extends Controller
 
                 DB::commit();
                 Log::info("Escrow payment captured for order: {$orderId}");
+
+                // Send emails (outside DB transaction; failure must not break webhook)
+                try {
+                    $buyer = User::find($escrow->buyer_id);
+                    $seller = User::find($escrow->seller_id);
+                    if ($buyer) {
+                        Mail::to($buyer->email)->send(new EscrowPaymentSuccess($buyer, $escrow, 'buyer'));
+                    }
+                    if ($seller) {
+                        Mail::to($seller->email)->send(new EscrowPaymentSuccess($seller, $escrow, 'seller'));
+                    }
+                } catch (\Exception $mailEx) {
+                    Log::error('Escrow email dispatch failed: ' . $mailEx->getMessage());
+                }
             } catch (\Exception $e) {
                 DB::rollBack();
                 Log::error('Razorpay Escrow Webhook Processing Failed: ' . $e->getMessage());
@@ -157,6 +172,10 @@ class RazorpayWebhookController extends Controller
             }
 
             Log::info("Dealer profile deactivated due to subscription cancellation: {$subscriptionId}");
+
+            if ($user) {
+                Mail::to($user->email)->send(new DealerSubscriptionCancelled($user));
+            }
         }
     }
 }

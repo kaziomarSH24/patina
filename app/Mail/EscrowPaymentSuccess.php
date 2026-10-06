@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\User;
+use App\Models\EscrowTransaction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -9,31 +11,28 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class EscrowPaymentSuccess extends Mailable
+class EscrowPaymentSuccess extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct()
+    public $user;
+    public $escrow;
+    public $role; // 'buyer' or 'seller'
+
+    public function __construct(User $user, EscrowTransaction $escrow, string $role)
     {
-        //
+        $this->user = $user;
+        $this->escrow = $escrow;
+        $this->role = $role;
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Escrow Payment Success',
+            subject: $this->role === 'buyer' ? 'Payment Successful - Patina Escrow' : 'New Order Received - Patina',
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
@@ -41,11 +40,6 @@ class EscrowPaymentSuccess extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
-     */
     public function attachments(): array
     {
         return [];
