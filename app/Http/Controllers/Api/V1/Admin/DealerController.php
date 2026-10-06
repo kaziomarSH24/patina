@@ -39,6 +39,8 @@ class DealerController extends Controller
                 'creditUsage' => $user->listings_count ?? 0, 
                 'creditLimit' => $plan ? $plan->listing_limit : 0,
                 'subscription' => $profile ? ucfirst($profile->subscription_status) : 'Pending Payment',
+                'subscription_id' => $profile ? $profile->razorpay_subscription_id : null,
+                'subscription_date' => ($profile && $profile->subscription_status === 'active') ? $profile->updated_at->format('M j, Y') : null,
             ];
         });
 
