@@ -38,7 +38,7 @@ class DealerController extends Controller
                 // Real usage from user's active listings
                 'creditUsage' => $user->listings_count ?? 0, 
                 'creditLimit' => $plan ? $plan->listing_limit : 0,
-                'subscription' => $profile && $profile->status === 'approved' ? 'Active' : 'Pending',
+                'subscription' => $profile ? ucfirst($profile->subscription_status) : 'Pending Payment',
             ];
         });
 

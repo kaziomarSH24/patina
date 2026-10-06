@@ -110,9 +110,10 @@ class RazorpayWebhookController extends Controller
         $profile = DealerProfile::where('razorpay_subscription_id', $subscriptionId)->first();
         
         if ($profile) {
-            // Activate the profile
+            // Activate the profile and subscription
             $profile->update([
-                'status' => 'approved', 
+                'status' => 'approved',
+                'subscription_status' => 'active'
             ]);
 
             // Assign dealer role to the user
@@ -132,9 +133,9 @@ class RazorpayWebhookController extends Controller
         $profile = DealerProfile::where('razorpay_subscription_id', $subscriptionId)->first();
         
         if ($profile) {
-            // Downgrade the profile
+            // Downgrade the subscription
             $profile->update([
-                'status' => 'rejected', // Or 'suspended'
+                'subscription_status' => 'cancelled' // Or 'halted' based on exact status if preferred
             ]);
 
             // Remove dealer role

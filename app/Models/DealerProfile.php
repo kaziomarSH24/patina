@@ -22,6 +22,8 @@ class DealerProfile extends Model
         'pan_number',
         'gst_certificate_path',
         'status',
+        'subscription_status',
+        'razorpay_subscription_id',
     ];
     
     protected $appends = ['gst_certificate_url'];
