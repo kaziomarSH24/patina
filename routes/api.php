@@ -82,7 +82,7 @@ Route::prefix('v1/auth')->group(function () {
 });
 
 // Webhooks (Unified Endpoint for Escrow & Subscriptions)
-Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])->name('api.webhooks.razorpay');
+Route::post('/v1/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])->name('api.webhooks.razorpay');
 
 // Public Listings, Discover & Market
 Route::prefix('v1')->group(function () {
