@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Dealer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dealer\SubmitOnboardingRequest;
 use App\Http\Resources\DealerProfileResource;
+use App\Models\User;
 use App\Services\DealerOnboardingService;
 use Illuminate\Http\Request;
 
@@ -29,6 +30,10 @@ class OnboardingController extends Controller
             );
 
             $profile->load('plan');
+
+            // Notify Admins
+            $admins = User::role('admin')->get();
+            \Illuminate\Support\Facades\Notification::send($admins, new \App\Notifications\NewDealerApplicationNotification($profile));
 
             return response_success(
                 'Dealer application submitted successfully.',

@@ -14,7 +14,12 @@ class SubmitOnboardingRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'subscription_plan_id' => 'required|exists:subscription_plans,id',
+            'subscription_plan_id' => [
+                'required',
+                \Illuminate\Validation\Rule::exists('subscription_plans', 'id')->where(function ($query) {
+                    $query->where('is_active', true);
+                }),
+            ],
             'business_name' => 'required|string|max:255',
             'address' => 'required|string',
             'approx_monthly_inventory' => 'nullable|string|max:255',

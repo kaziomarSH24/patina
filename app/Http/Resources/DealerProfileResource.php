@@ -16,6 +16,22 @@ class DealerProfileResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'user' => $this->whenLoaded('user', function () {
+                return [
+                    'id' => $this->user->id,
+                    'name' => $this->user->name,
+                    'email' => $this->user->email,
+                    'phone' => $this->user->phone_number,
+                    'avatar' => $this->user->avatar,
+                ];
+            }),
+            'plan' => $this->whenLoaded('plan', function () {
+                return [
+                    'id' => $this->plan->id,
+                    'name' => $this->plan->name,
+                    'price' => $this->plan->price,
+                ];
+            }),
             'subscription_plan_id' => $this->subscription_plan_id,
             'plan_name' => $this->whenLoaded('plan', fn() => $this->plan->name),
             'business_name' => $this->business_name,

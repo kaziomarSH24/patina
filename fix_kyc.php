@@ -1,0 +1,1 @@
+<?php require __DIR__.'/vendor/autoload.php'; \ = require_once __DIR__.'/bootstrap/app.php'; \ = \->make(Illuminate\Contracts\Console\Kernel::class); \->bootstrap(); \ = App\Models\User::find(15); if(\) { \->kyc_status = 'submitted'; \->save(); echo 'Fixed user 15 kyc_status to submitted'; } else { echo 'User not found'; }
