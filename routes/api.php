@@ -81,9 +81,8 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/reset-password-with-token', [PasswordController::class, 'resetPasswordWithToken'])->name('api.v1.auth.resetPasswordWithToken');
 });
 
-// Webhooks
-Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])->name('api.v1.webhooks.razorpay');
-Route::post('/v1/webhooks/razorpay', [CheckoutController::class, 'webhook'])->name('api.v1.webhooks.razorpay');
+// Webhooks (Unified Endpoint for Escrow & Subscriptions)
+Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handle'])->name('api.webhooks.razorpay');
 
 // Public Listings, Discover & Market
 Route::prefix('v1')->group(function () {

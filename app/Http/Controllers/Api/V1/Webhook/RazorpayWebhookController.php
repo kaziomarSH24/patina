@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api\V1\Webhook;
 use App\Http\Controllers\Controller;
 use App\Models\DealerProfile;
 use App\Models\User;
+use App\Models\Transaction;
+use App\Models\EscrowTransaction;
 use App\Services\RazorpayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class RazorpayWebhookController extends Controller
 {
@@ -35,6 +38,9 @@ class RazorpayWebhookController extends Controller
 
         try {
             switch ($event) {
+                case 'payment.captured':
+                    $this->handlePaymentCaptured($data['payload']['payment']['entity']);
+                    break;
                 case 'subscription.charged':
                 case 'subscription.authenticated':
                     $this->handleSubscriptionSuccess($data['payload']['subscription']['entity']);
@@ -49,6 +55,51 @@ class RazorpayWebhookController extends Controller
         } catch (\Exception $e) {
             Log::error("Razorpay Webhook Error: " . $e->getMessage());
             return response()->json(['error' => 'Webhook processing failed'], 500);
+        }
+    }
+
+    protected function handlePaymentCaptured($paymentData)
+    {
+        $orderId = $paymentData['order_id'];
+        $paymentId = $paymentData['id'];
+
+        // Find pending transaction
+        $transaction = Transaction::where('payment_intent_id', $orderId)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($transaction) {
+            DB::beginTransaction();
+            try {
+                // Update Transaction
+                $transaction->update([
+                    'status' => 'success',
+                    'gateway_transaction_id' => $paymentId,
+                ]);
+
+                // Create Escrow Transaction now that money is secured
+                $metadata = $transaction->metadata;
+                $escrow = EscrowTransaction::create([
+                    'offer_id' => $transaction->payable_id,
+                    'listing_id' => $metadata['listing_id'],
+                    'buyer_id' => $metadata['buyer_id'],
+                    'seller_id' => $metadata['seller_id'],
+                    'amount' => $metadata['base_amount'],
+                    'commission_amount' => $metadata['seller_commission_amount'] ?? 0,
+                    'status' => 'Payment Received',
+                    'razorpay_order_id' => $orderId,
+                    'razorpay_payment_id' => $paymentId,
+                ]);
+
+                $escrow->listing()->update(['status' => 'sold']);
+
+                DB::commit();
+                Log::info("Escrow payment captured for order: {$orderId}");
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Razorpay Escrow Webhook Processing Failed: ' . $e->getMessage());
+                throw $e;
+            }
         }
     }
 
