@@ -84,12 +84,18 @@ class RazorpayService
                 } elseif ($plan->slug === config('patina.plans.tier_2.slug')) {
                     // Upfront discount
                     $subscriptionData['start_at'] = now()->addDays(config('patina.plans.tier_2.defer_days'))->timestamp;
-                    $subscriptionData['upfront_amount'] = (int) (($plan->price * config('patina.plans.tier_2.upfront_percentage')) * 100);
+                    $amount = (int) (($plan->price * config('patina.plans.tier_2.upfront_percentage')) * 100);
+                    $subscriptionData['addons'] = [
+                        ['item' => ['name' => 'First Month Promo', 'amount' => $amount, 'currency' => 'INR']]
+                    ];
                     $isUsingPromo = true;
                 } elseif ($plan->slug === config('patina.plans.tier_3.slug')) {
                     // Upfront discount
                     $subscriptionData['start_at'] = now()->addDays(config('patina.plans.tier_3.defer_days'))->timestamp;
-                    $subscriptionData['upfront_amount'] = (int) (($plan->price * config('patina.plans.tier_3.upfront_percentage')) * 100);
+                    $amount = (int) (($plan->price * config('patina.plans.tier_3.upfront_percentage')) * 100);
+                    $subscriptionData['addons'] = [
+                        ['item' => ['name' => 'First Month Promo', 'amount' => $amount, 'currency' => 'INR']]
+                    ];
                     $isUsingPromo = true;
                 }
             }
