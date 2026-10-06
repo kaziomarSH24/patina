@@ -36,6 +36,7 @@ class RazorpayService
                 'name' => $user->name,
                 'email' => $user->email,
                 'contact' => $user->phone_number,
+                'fail_existing' => 0,
                 'notes' => [
                     'user_id' => $user->id,
                     'business_name' => $profile ? $profile->business_name : null,
@@ -47,7 +48,18 @@ class RazorpayService
             }
 
             return $customer->id;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            // If customer exists, try to fetch them by email or contact
+            if (str_contains($e->getMessage(), 'Customer already exists')) {
+                $customers = $this->api->customer->all(['email' => $user->email]);
+                if (isset($customers['items']) && count($customers['items']) > 0) {
+                    $existingCustomer = $customers['items'][0];
+                    if ($profile) {
+                        $profile->update(['razorpay_customer_id' => $existingCustomer->id]);
+                    }
+                    return $existingCustomer->id;
+                }
+            }
             Log::error('Razorpay Create Customer Error: ' . $e->getMessage());
             throw $e;
         }
