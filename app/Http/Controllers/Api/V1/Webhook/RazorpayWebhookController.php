@@ -132,21 +132,23 @@ class RazorpayWebhookController extends Controller
             // Only send the welcome email on the first activation.
             $wasAlreadyActive = $profile->subscription_status === 'active';
 
-            // Activate the profile and subscription
+            // Activate the subscription. NOTE: 'status' (admin approval) is never touched
+            // here - only an admin can approve an application.
             $profile->update([
-                'status' => 'approved',
                 'subscription_status' => 'active'
             ]);
 
-            // Assign dealer role to the user
+            // Assign dealer role only to admin-approved profiles
             $user = $profile->user;
-            if ($user && !$user->hasRole('dealer')) {
+            if ($profile->status !== 'approved') {
+                Log::warning("Payment received for NON-approved dealer profile {$profile->id} (sub {$subscriptionId}). Role not granted - review/refund needed.");
+            } elseif ($user && !$user->hasRole('dealer')) {
                 $user->syncRoles(['dealer']);
             }
             
             Log::info("Dealer profile activated for subscription: {$subscriptionId}");
 
-            if ($user && !$wasAlreadyActive) {
+            if ($user && !$wasAlreadyActive && $profile->status === 'approved') {
                 try {
                     $planName = $profile->plan->name ?? 'Dealer Plan';
                     $amount = $profile->plan->price ?? 0;

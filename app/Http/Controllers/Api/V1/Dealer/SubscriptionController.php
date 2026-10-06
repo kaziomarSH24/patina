@@ -33,6 +33,14 @@ class SubscriptionController extends Controller
             return response_error('No subscription plan selected.', [], 400);
         }
 
+        if ($profile->status !== 'approved') {
+            return response_error('Your application must be approved by an admin before you can subscribe.', [], 403);
+        }
+
+        if ($profile->subscription_status === 'active') {
+            return response_error('You already have an active subscription.', [], 400);
+        }
+
         $plan = SubscriptionPlan::find($profile->subscription_plan_id);
 
         if (!$plan || !$plan->razorpay_plan_id) {
