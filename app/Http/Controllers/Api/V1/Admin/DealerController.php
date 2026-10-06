@@ -10,7 +10,7 @@ class DealerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::role('dealer')->with(['dealerProfile.plan'])->withCount('listings');
+        $query = User::role('dealer')->with(['dealerProfile.plan'])->withCount('listings')->latest();
 
         if ($request->has('search')) {
             $search = $request->search;
