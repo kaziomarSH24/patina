@@ -59,4 +59,34 @@ class SubscriptionController extends Controller
             return response_error('Failed to initiate subscription.', ['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Cancel the dealer's active subscription
+     */
+    public function cancel(Request $request)
+    {
+        $user = $request->user();
+        $profile = DealerProfile::where('user_id', $user->id)->first();
+
+        if (!$profile || !$profile->razorpay_subscription_id) {
+            return response_error('No active subscription found.', [], 400);
+        }
+
+        try {
+            $this->razorpayService->cancelSubscription($profile->razorpay_subscription_id);
+            
+            // Note: The actual status update (removing role, etc.) will happen 
+            // via the 'subscription.cancelled' Webhook for safety. 
+            // But we can eagerly update it here too.
+            $profile->update(['subscription_status' => 'cancelled']);
+            
+            if ($user->hasRole('dealer')) {
+                $user->removeRole('dealer');
+            }
+
+            return response_success('Subscription cancelled successfully.');
+        } catch (\Exception $e) {
+            return response_error('Failed to cancel subscription.', ['error' => $e->getMessage()]);
+        }
+    }
 }

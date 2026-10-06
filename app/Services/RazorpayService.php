@@ -151,4 +151,16 @@ class RazorpayService
             return false;
         }
     }
+
+    public function cancelSubscription($subscriptionId)
+    {
+        try {
+            // Cancel immediately
+            $this->api->subscription->fetch($subscriptionId)->cancel(['cancel_at_cycle_end' => 0]);
+            return true;
+        } catch (Exception $e) {
+            Log::error("Razorpay Cancel Subscription Error: " . $e->getMessage());
+            throw $e;
+        }
+    }
 }

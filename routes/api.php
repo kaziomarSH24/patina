@@ -210,6 +210,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->prefix('v1')->group(functio
         Route::get('/onboarding/status', [DealerOnboardingController::class, 'status'])->name('onboarding.status');
         Route::delete('/onboarding/cancel', [DealerOnboardingController::class, 'cancel'])->name('onboarding.cancel');
         Route::post('/subscription/initiate', [DealerSubscriptionController::class, 'initiate'])->name('subscription.initiate');
+        Route::post('/subscription/cancel', [DealerSubscriptionController::class, 'cancel'])->name('subscription.cancel');
     });
 
     // Checkout & Escrow
