@@ -44,6 +44,11 @@ class SubscriptionController extends Controller
         try {
             $subscription = $this->razorpayService->createSubscription($user, $plan);
 
+            // Save the subscription ID so the webhook can find this profile later
+            $profile->update([
+                'razorpay_subscription_id' => $subscription->id
+            ]);
+
             return response_success('Subscription initiated successfully.', [
                 'subscription_id' => $subscription->id,
                 'razorpay_key' => config('services.razorpay.key'),
